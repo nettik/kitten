@@ -68,3 +68,72 @@ const char* inet_ntop(int family, const void* addrptr, char* strptr, size_t len)
 ```
 返回：若成功则为指向结果的指针，若出错则为NULL    
 从数值格式（addrptr）转换到表达式格式（strptr），len参数是目标存储单元大小
+
+
+### TCP套接字函数
+```
+#include <sys/socket.h>
+int socket(int family, int type, int protocol);
+```
+返回：若成功则为非负描述符，若出错则为1   
+```
+#include <sys/socket.h>
+int connect(int fd, const struct sockaddr* servaddr, socklen_t addrlen);
+```
+返回：若成功则为0，若出错则为-1   
+第二个参数，套接字地址结构必须含有服务器的IP地址和端口号   
+如果是TCP套接字，调用connect函数将激发TCP三次握手过程，而且仅在连接建立成功或出错时才返回
+```
+#include <sys/socket.h>
+int bind(int sockfd, const struct sockaddr* myaddr, socklen_t addrlen);
+```
+返回：若成功则为0，若出错则为-1   
+bind函数把本地协议赋予一个套接字
+```
+#include <sys/socket.h>
+int listen(int sockfd, int backlog)
+```
+返回：若成功则为0，若出错则为-1   
+第二个参数规定了内核应该为相应套接字排队的最大连接数（已完成连接队列和未完成连接队列之和）
+```
+#include <sys/socket.h>
+int accept(int sockfd, struct sockaddr* cliaddr, socklen_t* addrlen);
+```
+返回：若成功则为非负描述符，若出错则为-1   
+参数cliaddr和addrlen返回已连接的对端进程（客户）的协议地址   
+如果accept成功，那么其返回值是由内核自动生成的一个全新描述符，称其为已连接套接字描述符   
+
+
+### 基本线程函数
+```
+#include <pthread.h>
+int pthread_create(pthread_t* tid, const pthread_attr_t* attr, void* (*func)(void*), void* arg);
+```
+返回：若成功则为0，若出错则为正的Exxx值    
+一个进程内的每个线程都由一个线程ID（thread ID）标识，其数据类型为pthread_t。如果新的线程成功创建，其ID就通过tid指针返回     
+通常情况下，把attr参数指定为空指针     
+创建一个线程时，最后指定的参数是由该线程执行的函数及其参数，该线程通过调用这个函数开始执行。该函数的地址由func参数指定，该函数的唯一调用参数是指针arg
+```
+#include <pthread.h>
+int pthread_join(pthread_t* tid, void** status);
+```
+返回：若成功则为0，若出错则为正的Exxx值  
+通过调用pthread_join等待一个给定线程终止  
+如果status指针非空，来自所等待线程的返回值（一个指向某个对象的指针）将存入status指向的位置
+```
+#include <pthread.h>
+pthread_t pthread_self(void);
+```
+返回：调用线程的线程ID  
+每个线程使用pthread_self获取自身的线程ID
+```
+#include <pthread.h>
+int pthread_detach(pthread_t tid);
+```
+pthread_detach函数将把指定的线程转变为脱离状态
+```
+#include <pthread.h>
+void pthread_exit(void* status);
+```
+线程终止函数
+
