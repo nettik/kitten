@@ -137,3 +137,49 @@ void pthread_exit(void* status);
 ```
 线程终止函数
 
+
+### 互斥锁
+```
+#include <pthread.h>
+int pthread_mutex_lock(pthread_mutex_t* mptr);
+int pthread_mutex_unlock(pthread_mutex_t* mptr);
+```
+返回：若成功则为0，若出错则为正的Exxx值  
+可以通过互斥锁保护共享变量；访问该变量的前提条件是持有该互斥锁  
+如果试图上锁已被另外某个线程锁住的一个互斥锁，本线程将被阻塞，直到该互斥锁被解锁为止  
+如果某个互斥锁变量是静态分配的，就必须把它初始化为常值PTHREAD_MUTEX_INITIALIZER  
+
+
+### 条件变量
+互斥锁提供互斥机制，条件变量提供信号机制
+```
+#include <pthread.h>
+int pthread_cond_wait(pthread_cond_t* cptr, pthread_mutex_t* mptr);
+int pthread_cond_signal(pthread_cond_t* cptr);
+```
+返回：若成功则为0，若出错则为正的Exxx值  
+pthread_cond_wait函数把调用线程投入睡眠并释放调用线程持有的互斥锁；当调用线程从pthread_cond_wait返回时（其他某个线程发送信号），该线程再次持有该互斥锁
+
+
+### IO函数
+#### read、write
+```
+#include <unistd.h>
+ssize_t read(int fd, void* buf, size_t nbytes)
+```
+返回值：若成功则返回实际读到的字节数，若已到文件尾则返回0，出错返回-1  
+从fd中读取nbytes字节的数据到buf中  
+ssize_t提供带符号的返回值，size_t不带符号
+```
+#include <unistd.h>
+ssize_t write(int fd, const void* buf, size_t nbytes);
+```
+返回值：若成功则返回写出的字节数，若失败返回-1
+#### recv、send
+```
+#include <sys/socket.h>
+ssize_t recv(int sockfd, void* buff, size_t nbytes, int flags);
+ssize_t send(int sockfd, const void* buff, size_t nbytes, int flags);
+```
+返回：若成功则为读入或写出的字节数，若出错则为-1
+flags参数的值或为0或为一个或多个常值的逻辑或
