@@ -103,6 +103,25 @@ int accept(int sockfd, struct sockaddr* cliaddr, socklen_t* addrlen);
 参数cliaddr和addrlen返回已连接的对端进程（客户）的协议地址   
 如果accept成功，那么其返回值是由内核自动生成的一个全新描述符，称其为已连接套接字描述符   
 
+```
+#include <unistd.h>
+int close(int sockfd);
+```
+返回：若成功则为0，若出错则为-1
+close一个TCP套接字的默认行为是把该套接字标记成已关闭
+```
+#include <sys/socket.h>
+int shutdown(int sockfd, int howto);
+```
+close函数有两个限制，可以使用shutdown函数来避免  
+1）close把描述符的引用计数减1，仅在该计数变为0时才关闭套接字；使用shutdown函数可以不管引用计数就激发TCP的正常连接终止序列  
+2）close终止读和写两个方向的数据传送
+
+shutdown函数的行为依赖于howto参数的值  
+1）SHUT_RD：关闭连接的读这一半，套接字中不再有数据可接收，而且套接字接收缓冲区中的现有数据都被丢弃，进程不能再对这个的套接字调用任何读函数，对一个TCP套接字这样调用shutdown函数后，由该套接字接收的来自对端的任何数据都被确认，然后悄然丢弃  
+2）SHUT_WR：关闭连接的写这一半，对于TCP套接字，这称为半关闭，当前留在套接字发送缓冲区中的数据将被发送掉，后跟TCP的正常连接终止序列，进程不能再对这样的套接字调用任何写函数  
+3) SHUT_RDWR：连接的读半部和写半部都关闭
+
 
 ### 基本线程函数
 ```
