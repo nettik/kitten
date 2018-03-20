@@ -97,3 +97,23 @@ maxfdp1参数指定待测试的描述符的个数，它的值是待测试的最�
 int poll(struct pollfd* fdarray, unsigned long nfds, int timeout);
 ```
 返回：若有就绪描述符则为其数目，若超时则为0，若出错则为-1
+
+第一个参数是指向一个结构数组第一个元素的指针，每个数组元素都是一个pollfd结构，用于指定测试某个给定描述符fd的条件
+```
+struct pollfd
+{
+  int fd;         descriptor to check
+  short events;   events of interest on fd
+  short revents;  events that occurred on fd
+};
+```
+要测试的条件由events成员指定，函数在revents成员中返回该描述符的状态  
+
+结构数组中的元素的个数是由nfds参数指定
+
+timeout参数指定poll函数返回前等待多长时间，它是一个指定应等待毫秒数的正值  
+1) INFTIM：永远等待
+2) 0：立即返回，不阻塞进程
+3) >0：等待指定数目的毫秒数
+
+如果我们不再关心某个特定描述符，那么可以把与它对应的pollfd结构的fd成员设置成一个负值，poll函数将忽略这样的pollfd结构的events成员，返回时将它的revents成员的值置为0
