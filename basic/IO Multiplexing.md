@@ -41,8 +41,8 @@
 int select(int maxfdp1, fd_set* readset, fd_set* writeset, fd_set* exceptset, const struct timeval* timeout);
 ```
 返回：若有就绪描述符则为其数目，若超时则为0，若出错则为-1
-## 1、timeout参数
-告知内核等待所指定描述符中的任何一个就绪可花多长时间  
+
+timeout参数，告知内核等待所指定描述符中的任何一个就绪可花多长时间  
 timeval结构用于指定这段时间的秒数和微秒数
 ```
 struct timeval
@@ -55,3 +55,24 @@ struct timeval
 1）永远等待下去：仅在有一个描述符准备好I/O时才返回。为此我们把该参数设置为空指针  
 2）等待一段固定时间：在有一个描述符准备好I/O时返回，但是不超过由该参数所指向的timeval结构中指定的秒数和微秒数  
 3）根本不等待：检查描述符后立即返回，这称为轮询。为此，该参数必须指向一个timeval结构，而且其中的定时器值（由该结构指定的秒数和微秒数）必须为0
+
+readset、writeset和exceptset指定我们要让内核测试读、写和异常条件的描述符  
+select使用描述符集，通常是一个整数数组，其中每个整数中的每一位对应一个描述符  
+```
+void FD_ZERO(fd_set* fdset);          clear all bits in fdset
+void FD_SET(int fd, fd_set* fdset);   turn on the bit for fd in fdset
+void FD_CLR(int fd, fd_set* fdset);   turn off the bit for fd in fdset
+int FD_ISSET(int fd, fd_set* fdset);  is the bit for fd on in fdset?
+```
+描述符集初始化非常重要  
+select函数的中间三个参数readset、writeset和exceptset中，如果我们对某一个的条件不感兴趣，就可以把它设为空指针  
+
+maxfdp1参数指定待测试的描述符的个数，它的值是待测试的最大描述符加1
+
+头文件<sys/select.h>中定义的FD_SETSIZE常值是数据类型fd_set中的描述符总数，其值通常是1024
+
+select函数修改由指针readset、writeset和exceptset所指向的描述符集，因而这三个参数都是值-结果参数  
+调用该函数时，指定所关心的描述符的值  
+函数返回时，结果将指示哪些描述符已就绪  
+该函数返回后，使用FD_ISSET来测试fd_set数据类型中的描述符  
+描述符集内任何与未就绪描述符对应的位返回时均清成0，为此，每次重新调用select函数时，都得再次把所有描述符集内所关心的位置为1  
