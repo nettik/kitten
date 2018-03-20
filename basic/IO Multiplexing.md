@@ -89,3 +89,11 @@ maxfdp1参数指定待测试的描述符的个数，它的值是待测试的最�
 2）该连接的写半部关闭，对这样的套接字的写操作将产生SIGPIPE信号  
 3）使用非阻塞式connect的套接字已建立连接，或者connect已经以失败告终  
 4）其上有一个套接字错误待处理，对这样的套接字的写操作将不阻塞并返回-1（也就是返回一个错误），同时把errno设置成确切的错误条件；这些待处理的错误也可以通过指定SO_ERROR套接字选项调用getsockopt获取并清除
+
+
+# poll函数
+```
+#include <poll.h>
+int poll(struct pollfd* fdarray, unsigned long nfds, int timeout);
+```
+返回：若有就绪描述符则为其数目，若超时则为0，若出错则为-1
