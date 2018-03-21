@@ -117,3 +117,52 @@ timeout参数指定poll函数返回前等待多长时间，它是一个指定应
 3) \>0：等待指定数目的毫秒数
 
 如果我们不再关心某个特定描述符，那么可以把与它对应的pollfd结构的fd成员设置成一个负值，poll函数将忽略这样的pollfd结构的events成员，返回时将它的revents成员的值置为0
+
+
+# epoll函数
+```
+#include <sys/epoll.h>
+int epoll_create(int size);
+```
+创建一个epoll的句柄，size用来告诉内核这个监听的数目一共有多大  
+创建好epoll句柄后，它就是会占用一个fd值，所以在使用完epoll后，必须调用close关闭，否则可能导致fd被耗尽
+```
+#include <sys/epoll.h>
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event* event);
+```
+1、第一个参数是epoll_create的返回值  
+2、第二个参数表示动作，用三个宏来表示   
+EPOLL_CTL_ADD：注册新的fd到epfd中  
+EPOLL_CTL_MOD：修改已经注册的fd的监听事件  
+EPOLL_CTL_DEL：从epfd中删除一个fd  
+3、第三个参数是需要监听的fd  
+4、第四个参数是告诉内核需要监听什么事，struct epoll_event结构如下
+```
+typedef union epoll_data
+{
+  void* ptr;
+  int fd;
+  __uint32_t u32;
+  __uint64_ u64;
+}epoll_data_t;
+
+struct epoll_event
+{
+  _uint32_t events;
+  epoll_data_t data;
+};
+```
+events可以是以下几个宏的集合  
+1) EPOLLIN：表示对应的文件描述符可以读（包括对端socket正常关闭）  
+2) EPOLLOUT：表示对应的文件描述符可以写  
+3) EPOLLPRI：表示对应的文件描述符有紧急的数据可读  
+4) EPOLLERR：表示对应的文件描述符发生错误  
+5) EPOLLHUP：表示对应的文件描述符被挂断  
+6) EPOLLET：将epoll设为边缘触发(Edge Triggered)模式，这是相对于水平触发(Level Triggered)来说的  
+7) EPOLLONSHOT：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个socket的话，需要再次把这个socket加入epoll队列中  
+```
+#include <sys/epoll.h>
+int epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout);
+```
+等待事件的产生，参数events用来从内核得到事件的集合，maxevents告知内核这个events有多大，这个maxevents的值不能大于创建epoll_create时的size，参数timeout是超时时间
+该函数返回需要处理的事件数目，返回0表示已超时
