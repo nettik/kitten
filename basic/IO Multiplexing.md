@@ -6,24 +6,41 @@
 
 ### 阻塞式I/O模型
 默认情况下，所有套接字都是阻塞的   
+![image](https://github.com/nettik/kitten/blob/master/basic/picture/1.png)  
 进程调用recvfrom，其系统调用直到数据报到达且被复制到应用进程的缓冲区中或者发生错误才返回   
 进程在调用recvfrom开始到它返回的整段时间内是被阻塞的  
 
 
 ### 非阻塞式I/O模型
-进程把一个套接字设置成非阻塞是在通知内核：当所请求的I/O操作非得把本进程投入睡眠才能完成时，不要把本进程投入睡眠，而是返回一个错误
+进程把一个套接字设置成非阻塞是在通知内核：当所请求的I/O操作非得把本进程投入睡眠才能完成时，不要把本进程投入睡眠，而是返回一个错误   
+![image](https://github.com/nettik/kitten/blob/master/basic/picture/2.png)   
+前三次调用recvfrom时没有数据可返回，因此内核转而立即返回一个EWOULDBLOCK错误  
+当一个应用进程像这样对一个非阻塞描述符循环调用recvfrom时，我们称之为轮询
+
+对于非阻塞的套接字，如果输入操作不能被满足（对于TCP套接字即至少一个字节的数据可读），相应调用将立即返回一个EWOULDBLOCK错误  
+对于非阻塞的TCP套接字，如果其发送缓冲区中根本没有空间，输出函数调用将立即返回一个EWOULDBLOCK错误  
+
+如果对一个阻塞的套接字调用accept函数，并且尚无新的连接到达，调用进程将被投入睡眠  
+如果对一个非阻塞的套接字调用accept函数，并且尚无新的连接到达，accept调用将立即返回一个EWOULDBLOCK错误  
 
 
 ### I/O复用模型
-有了I/O复用，就可以调用select或poll，阻塞在这两个系统调用中的某一个之上，而不是阻塞在真正的I/O系统调用上
-
+有了I/O复用，就可以调用select或poll，阻塞在这两个系统调用中的某一个之上，而不是阻塞在真正的I/O系统调用上   
+![image](https://github.com/nettik/kitten/blob/master/basic/picture/3.png)   
+进程阻塞于select调用，等待数据报套接字变为可读，当select返回套接字可读这一条件时，我们调用recvfrom把所读数据报复制到应用进程缓冲区  
 
 ### 信号驱动式I/O模型
-可以用信号，让内核在描述符就绪时发送SIGIO信号通知我们
+可以用信号，让内核在描述符就绪时发送SIGIO信号通知我们      
+![image](https://github.com/nettik/kitten/blob/master/basic/picture/4.png)   
+首先开启套接字的信号驱动式I/O功能，并通过sigaction系统调用安装一个信号处理函数，该系统调用将立即返回，进程继续工作   
+当数据报准备好读取时，内核就为该进程产生一个SIGIO信号，随后既可以在信号处理函数中调用recvfrom读取数据报，并通知主循环数据已准备好待处理，也可以立即通知主循环，让它读取数据报   
+这种模型的优势在于等待数据报到达期间进程不被阻塞
 
 
 ### 异步I/O模型
-告知内核启动某个操作，并让内核在整个操作（包括将数据从内核复制到我们自己的缓冲区）完成后通知我们
+![image](https://github.com/nettik/kitten/blob/master/basic/picture/5.png)  
+信号驱动模式I/O是由内核通知我们何时可以启动一个I/O操作，而异步I/O模型是由内核通知我们I/O操作何时完成   
+告知内核启动某个操作，并让内核在整个操作（包括将数据从内核复制到我们自己的缓冲区）完成后通知我们  
 
 
 ### 同步I/O和异步I/O对比
