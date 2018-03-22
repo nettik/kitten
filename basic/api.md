@@ -200,5 +200,28 @@ ssize_t write(int fd, const void* buf, size_t nbytes);
 ssize_t recv(int sockfd, void* buff, size_t nbytes, int flags);
 ssize_t send(int sockfd, const void* buff, size_t nbytes, int flags);
 ```
-返回：若成功则为读入或写出的字节数，若出错则为-1
+返回：若成功则为读入或写出的字节数，若出错则为-1  
 flags参数的值或为0或为一个或多个常值的逻辑或
+
+### fcntl函数
+```
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ... /* int arg */);
+```
+返回：若成功则取决于cmd，若出错则为-1
+
+设置某个文件标志的唯一正确的方法是：先取得当前标志，与新标志逻辑或后再设置标志
+```
+int flags;
+if ((flags = fcntl(fd, F_GETFL, 0)) < 0)
+	err_sys("FGETFL error");
+flags |= O_NONBLOCK;
+if (fcntl(fd, F_SETFL, flags) < 0)
+	err_sys("F_SETFL error");
+```
+以下代码关闭非阻塞标志,flags是由上面代码所示的fcntl调用设置来的
+```
+flags &= ~O_NONBLOCK;
+if (fcntl(fd, F_SETFL, flags) < 0)
+	err_sys("E_SETFL error");
+```
