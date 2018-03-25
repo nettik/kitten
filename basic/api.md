@@ -203,6 +203,13 @@ ssize_t send(int sockfd, const void* buff, size_t nbytes, int flags);
 返回：若成功则为读入或写出的字节数，若出错则为-1  
 flags参数的值或为0或为一个或多个常值的逻辑或
 
+flags参数取值  
+MSG_DONTROUTE：绕过路由表查找  
+MSG_DONTWAIT：仅本操作非阻塞  
+MSG_OOB：发送或接收带外数据  
+MSG_PEEK：窥看外来消息  
+MSG_WAITALL：等待所有数据  
+
 ### fcntl函数
 ```
 #include <fcntl.h>
