@@ -35,3 +35,35 @@ p <变量名称>
 
 10、i：info  
 用于显示各类信息
+
+# gcc/g++常用命令
+1、-o  
+用来指定输出文件的文件名
+
+2、-c  
+只激活预处理、编译和汇编，也就是把程序做成.obj文件
+
+3、-g  
+在编译的时候产生供gdb调试用的可执行文件
+
+4、-Wall  
+生成所有警告信息
+
+5、-w  
+不生成任何警告信息
+
+6、-std  
+指定C方言，如：-std=c99
+
+# makefile
+makefile的规则
+```
+target ... : prerequisites ...
+        command
+        ...
+        ...
+```
+target也就是一个目标文件，可以是object file，也可以是执行文件   
+prerequisites就是要生成target所需要的文件或是目标   
+command也就是make需要执行的命令   
+这是一个文件的依赖关系，也就是说，target这一个或多个的目标文件依赖于prerequisites中的文件，其生成规则定义在command中
