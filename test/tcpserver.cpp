@@ -25,18 +25,20 @@ int main()
 	bzero(&cliaddr, sizeof(cliaddr));
 	char buffer[MAX_SIZE];
 	ssize_t n;
+
+	socklen_t clilen = sizeof(cliaddr);
+	connfd = accept(listenfd, (SA*)&cliaddr, &clilen);
 	for (;;)
 	{
-		socklen_t clilen = sizeof(cliaddr);
-		connfd = accept(listenfd, (SA*)&cliaddr, &clilen);
-
-		while (n = recv(connfd, buffer, sizeof(buffer), MSG_WAITALL))
+		n = recv(connfd, buffer, sizeof(buffer), 0);
+		buffer[n] = '\0';
+		if (n == 0)
 		{
-			buffer[n] = '\0';
-			printf("receive from client : %s\n", buffer);
-			send(connfd, buffer, n, 0);
+			close(connfd);
+			break;
 		}
-		close(connfd);
+		printf("receive from client : %s\n", buffer);
+		send(connfd, buffer, n, 0);
 	}
 	close(listenfd);
 }

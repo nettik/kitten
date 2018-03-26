@@ -25,7 +25,9 @@ int main()
 	char sendbuffer[MAX_SIZE];
 	while (scanf("%s", sendbuffer))
 	{
-		printf("to be sent : %s\n", sendbuffer);
+		//printf("to be sent : %s\n", sendbuffer);
+		if (strcmp(sendbuffer, "quit") == 0)
+			break;
 
 		send(sockfd, sendbuffer, strlen(sendbuffer), 0);
 
@@ -35,5 +37,6 @@ int main()
 		recvbuffer[n] = '\0';
 
 		printf("echo from server : %s\n", recvbuffer);
-	}	
+	}
+	close(sockfd);
 }
