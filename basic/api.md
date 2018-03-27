@@ -149,6 +149,7 @@ pthread_t pthread_self(void);
 #include <pthread.h>
 int pthread_detach(pthread_t tid);
 ```
+一个线程或者是可汇合的(joinable,默认值)，或者是脱离的(detached)。当一个可汇合的线程终止时，它的线程ID和退出状态将留存到另一个线程对它调用pthread_join。脱离的线程缺像守护进程，当它们终止时，所有相关资源都被释放，我们不能等待它们终止。  
 pthread_detach函数将把指定的线程转变为脱离状态
 ```
 #include <pthread.h>
