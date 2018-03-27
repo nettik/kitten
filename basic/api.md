@@ -232,3 +232,18 @@ flags &= ~O_NONBLOCK;
 if (fcntl(fd, F_SETFL, flags) < 0)
 	err_sys("E_SETFL error");
 ```
+
+### getsockname和getpeername函数
+```
+#include <sys/socket.h>
+int getsockname(int sockfd, struct sockaddr* localaddr, socklen_t* addrlen);
+int getpeername(int sockfd, struct sockaddr* peeraddr, socklen_t addrlen);
+```
+返回：若成功则为0，若出错则为-1   
+这两个函数的最后一个参数都是值-结果参数。这就是说，这两个函数都得装填由localaddr或peeraddr指针所指的套接字地址结构  
+
+需要这两个函数的理由如下：  
+1、在一个没有调用bind的TCP客户上，connect成功返回后，getsockname用于返回由内核赋予该连接的本地IP地址和本地端口号  
+2、在以端口号0调用bind(告知内核去选择本地端口号)后，getsockname用于返回由内核赋予的本地端口号    
+3、在一个以通配IP地址调用bind的TCP服务器上，与某个客户的连接一旦建立(accept成功返回)，getsockname就可以用于返回由内核赋予该连接的本地IP地址。在这样的调用中，套接字描述符参数必须是已连接套接字的描述符，而不是监听套接字的描述符  
+4、当一个服务器是由调用过accept的某个进程通过调用exec执行程序时，它能够获取客户身份的唯一途径便是调用getpeername  
