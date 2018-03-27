@@ -1,4 +1,7 @@
 #include <netinet/in.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -7,10 +10,15 @@
 
 typedef sockaddr SA;
 
+void string_echo(int connfd);
+static void* pthread_work(void* arg);
+
 int main()
 {
-	int listenfd, connfd;
+	int listenfd;
+	int* connfd;
 	struct sockaddr_in cliaddr, seraddr;
+	pthread_t tid;
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	
@@ -23,11 +31,31 @@ int main()
 	listen(listenfd, 5);
 	
 	bzero(&cliaddr, sizeof(cliaddr));
-	char buffer[MAX_SIZE];
-	ssize_t n;
 
 	socklen_t clilen = sizeof(cliaddr);
-	connfd = accept(listenfd, (SA*)&cliaddr, &clilen);
+	
+	for (;;)
+	{
+		connfd = (int*)malloc(sizeof(int));
+		*connfd = accept(listenfd, (SA*)&cliaddr, &clilen);
+		pthread_create(&tid, NULL, &pthread_work, (void*)connfd);
+	}
+	
+	close(listenfd);
+}
+
+static void* pthread_work(void* arg)
+{
+	int connfd = *((int*)arg);
+	pthread_detach(pthread_self());
+	string_echo(connfd);
+	return NULL;
+}
+
+void string_echo(int connfd)
+{
+	char buffer[MAX_SIZE];
+	ssize_t n;
 	for (;;)
 	{
 		n = recv(connfd, buffer, sizeof(buffer), 0);
@@ -37,8 +65,17 @@ int main()
 			close(connfd);
 			break;
 		}
-		printf("receive from client : %s\n", buffer);
+		
+		struct sockaddr_in cliaddr;
+		socklen_t clilen = sizeof(cliaddr);
+
+		getpeername(connfd, (SA*)&cliaddr, &clilen);
+		
+		char straddr[20];
+		inet_ntop(AF_INET, &cliaddr.sin_addr, straddr, sizeof(straddr));
+		int port = ntohs(cliaddr.sin_port);
+
+		printf("receive from %s : %d : %s\n",straddr, port, buffer);
 		send(connfd, buffer, n, 0);
 	}
-	close(listenfd);
 }
