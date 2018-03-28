@@ -1,11 +1,7 @@
-#include <netinet/in.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <arpa/inet.h>
-#include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include "response.h"
 #define MAX_SIZE 1024
 
 typedef sockaddr SA;
@@ -44,7 +40,7 @@ int main()
 	close(listenfd);
 }
 
-static void* pthread_work(void* arg)
+void* pthread_work(void* arg)
 {
 	int connfd = *((int*)arg);
 	pthread_detach(pthread_self());
@@ -52,30 +48,3 @@ static void* pthread_work(void* arg)
 	return NULL;
 }
 
-void string_echo(int connfd)
-{
-	char buffer[MAX_SIZE];
-	ssize_t n;
-	for (;;)
-	{
-		n = recv(connfd, buffer, sizeof(buffer), 0);
-		buffer[n] = '\0';
-		if (n == 0)
-		{
-			close(connfd);
-			break;
-		}
-		
-		struct sockaddr_in cliaddr;
-		socklen_t clilen = sizeof(cliaddr);
-
-		getpeername(connfd, (SA*)&cliaddr, &clilen);
-		
-		char straddr[20];
-		inet_ntop(AF_INET, &cliaddr.sin_addr, straddr, sizeof(straddr));
-		int port = ntohs(cliaddr.sin_port);
-
-		printf("receive from %s : %d : %s\n",straddr, port, buffer);
-		send(connfd, buffer, n, 0);
-	}
-}
