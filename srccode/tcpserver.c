@@ -3,11 +3,14 @@
 #include "init.h"
 #include "thread.h"
 #include "epoll.h"
+#include <unordered_map>
+
 #define MAX_SIZE 1024
 
 typedef sockaddr SA;
 
-void* pthread_work(void* arg);
+using namespace std;
+
 
 int main()
 {
@@ -18,7 +21,10 @@ int main()
 
 	listenfd = socket_bind_listen();
 	
-	do_epoll(listenfd);
+	unordered_map<int, struct task_queue> task;
+
+
+	do_epoll(listenfd, &task);
 
 
 

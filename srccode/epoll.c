@@ -24,7 +24,7 @@ void epoll_mod(int epollfd, int fd, int state)
 	epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
-void do_epoll(int listenfd)
+void do_epoll(int listenfd, unordered_map<int, struct task_queue>* task)
 {
 	int epollfd, nums;
 	struct epoll_event events[EPOLLEVENTS];
@@ -34,11 +34,11 @@ void do_epoll(int listenfd)
 	for (;;)
 	{
 		nums = epoll_wait(epollfd, events, EPOLLEVENTS, -1);
-		handle_event(epollfd, events, nums, listenfd);
+		handle_event(epollfd, events, nums, listenfd, task);
 	}
 }
 
-void handle_event(int epollfd, struct epoll_event* events, int nums, int listenfd)
+void handle_event(int epollfd, struct epoll_event* events, int nums, int listenfd, unordered_map<int, struct task_queue>* task)
 {
 	int fd;
 	for (int i = 0; i < nums; i++)
@@ -51,12 +51,23 @@ void handle_event(int epollfd, struct epoll_event* events, int nums, int listenf
 			struct thread_parameter para;
 			para.epollfd = epollfd;
 			para.sockfd = events[i].data.fd;
+			para.taskptr = task;
+
 			pthread_t tid;
 
-			pthread_create(&tid, NULL, &thread_work, &para);
-
+			pthread_create(&tid, NULL, &thread_work_recv, &para);
+			
 		}
 		else if (events[i].events & EPOLLOUT)
-			do_send(epollfd, events[i].data.fd);
+		{	
+			/*struct thread_parameter para;
+			para.epollfd = epollfd;
+			para.sockfd = events[i].data.fd;
+			para.taskptr = task;
+
+			pthread_t tid;
+			pthread_create(&tid, NULL, &thread_work_send, &para);*/
+			do_send(epollfd, fd, task);
+		}
 	}
 }

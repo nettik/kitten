@@ -1,19 +1,19 @@
 all:client server
 
 init.o:init.c init.h
-	g++ -c init.c init.h
+	g++ -g -c init.c init.h
 
 response.o:response.c response.h
-	g++ -c  response.c response.h
+	g++ -g -c response.c response.h
 
 thread.o:thread.c thread.h
-	g++ -c thread.c thread.h -lpthread
+	g++ -g -c thread.c thread.h -lpthread
 
 epoll.o:epoll.c epoll.h
-	g++ -c epoll.c epoll.h -lpthread
+	g++ -g -c epoll.c epoll.h -lpthread
 
 tcpserver.o:tcpserver.c
-	g++ -c  tcpserver.c -lpthread
+	g++ -g -c  tcpserver.c -lpthread
 
 server:tcpserver.o response.o init.o thread.o epoll.o
 	g++ -g -o server tcpserver.o response.o init.o thread.o epoll.o -lpthread

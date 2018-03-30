@@ -39,7 +39,7 @@ void accept_connection(int epollfd, int listenfd)
 	epoll_add(epollfd, connfd, EPOLLIN);
 }
 
-void do_recv(int epollfd, int connfd)
+void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* task)
 {
 	char buffer[MAX_SIZE];
 	ssize_t n;
@@ -60,11 +60,26 @@ void do_recv(int epollfd, int connfd)
 		int port = ntohs(cliaddr.sin_port);
 
 		printf("receive from %s : %d : %s\n", IPaddr, port, buffer);
+
+		task_queue tq;
+		tq.sockfd = connfd;
+		strcpy(tq.buffer, buffer);
+		
+		(*task)[connfd] = tq;
+
+		epoll_mod(epollfd, connfd, EPOLLOUT);
 	}
 }
 
 
-void do_send(int epollfd, int connfd)
+void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* task)
 {
+	char buffer[MAX_SIZE];
+	strcpy(buffer, ((*task)[connfd]).buffer);
+	
+	send(connfd, buffer, strlen(buffer), 0);
+	
+	(*task).erase(connfd);
 
+	epoll_mod(epollfd, connfd, EPOLLIN);
 }

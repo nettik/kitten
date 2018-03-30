@@ -31,12 +31,12 @@ int main()
 
 		send(sockfd, sendbuffer, strlen(sendbuffer), 0);
 
-		/*ssize_t n;
+		ssize_t n;
 		char recvbuffer[MAX_SIZE];
 		n = recv(sockfd, recvbuffer, sizeof(recvbuffer), 0);
 		recvbuffer[n] = '\0';
 
-		printf("echo from server : %s\n", recvbuffer);*/
+		printf("echo from server : %s\n", recvbuffer);
 	}
 	close(sockfd);
 }
