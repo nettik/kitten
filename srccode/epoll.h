@@ -1,15 +1,11 @@
 #ifndef EPOLL_H
 #define EPOLL_H
 
-#include <sys/epoll.h>
-#include "response.h"
+#include "init.h"
 #include "thread.h"
-#include <unordered_map>
 
 using namespace std;
 
-#define EPOLL_LIS_SIZE 1000
-#define EPOLLEVENTS 200
 
 void do_epoll(int listenfd, unordered_map<int, struct task_queue>* task);
 

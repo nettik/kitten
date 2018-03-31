@@ -75,11 +75,15 @@ void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* task)
 {
 	char buffer[MAX_SIZE];
+
+	//pthread_mutex_lock(&lock_task);
+
 	strcpy(buffer, ((*task)[connfd]).buffer);
-	
-	send(connfd, buffer, strlen(buffer), 0);
-	
 	(*task).erase(connfd);
 
+	//pthread_mutex_unlock(&lock_task);
+
+	send(connfd, buffer, strlen(buffer), 0);
+	
 	epoll_mod(epollfd, connfd, EPOLLIN);
 }

@@ -1,10 +1,8 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include <pthread.h>   //pthread_detach(), pthread_create()
-#include "response.h"  //string_echo()
-#include <malloc.h>    //free()
-#include <unordered_map>
+#include "init.h"
+#include "response.h"
 
 using namespace std;
 

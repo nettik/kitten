@@ -1,16 +1,13 @@
-#include <stdlib.h>   //malloc()
 #include "response.h"
 #include "init.h"
 #include "thread.h"
 #include "epoll.h"
 #include <unordered_map>
 
-#define MAX_SIZE 1024
-
-typedef sockaddr SA;
 
 using namespace std;
 
+//pthread_mutex_t lock_task = PTHREAD_MUTEX_INITIALIZER;
 
 int main()
 {
