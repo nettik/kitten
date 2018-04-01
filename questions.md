@@ -8,4 +8,3 @@ struct para
 para* p = new para();
 pthread_create(&tid, NULL, &threadfunc, p);
 ```
-https://blog.csdn.net/cj_star/article/details/54379435
