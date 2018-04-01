@@ -48,26 +48,26 @@ void handle_event(int epollfd, struct epoll_event* events, int nums, int listenf
 			accept_connection(epollfd, listenfd);
 		else if (events[i].events & EPOLLIN)
 		{
-			struct thread_parameter para;
-			para.epollfd = epollfd;
-			para.sockfd = events[i].data.fd;
-			para.taskptr = task;
+			struct thread_parameter* para = new thread_parameter();
+			para->epollfd = epollfd;
+			para->sockfd = events[i].data.fd;
+			para->taskptr = task;
 
 			pthread_t tid;
 
-			pthread_create(&tid, NULL, &thread_work_recv, &para);
+			pthread_create(&tid, NULL, &thread_work_recv, para);
 			
 		}
 		else if (events[i].events & EPOLLOUT)
 		{	
-			/*struct thread_parameter para;
-			para.epollfd = epollfd;
-			para.sockfd = events[i].data.fd;
-			para.taskptr = task;
+			struct thread_parameter* para = new thread_parameter();
+			para->epollfd = epollfd;
+			para->sockfd = events[i].data.fd;
+			para->taskptr = task;
 
 			pthread_t tid;
-			pthread_create(&tid, NULL, &thread_work_send, &para);*/
-			do_send(epollfd, fd, task);
+			pthread_create(&tid, NULL, &thread_work_send, para);
+			//do_send(epollfd, fd, task);
 		}
 	}
 }

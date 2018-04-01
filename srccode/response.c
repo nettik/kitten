@@ -51,6 +51,8 @@ void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 	}
 	else if (n > 0)
 	{
+		buffer[n] = '\0';
+
 		struct sockaddr_in cliaddr;
 		socklen_t clilen = sizeof(cliaddr);
 		getpeername(connfd, (SA*)&cliaddr, &clilen);
@@ -83,7 +85,7 @@ void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 
 	//pthread_mutex_unlock(&lock_task);
 
-	send(connfd, buffer, strlen(buffer), 0);
+	send(connfd, buffer, sizeof(buffer), 0);
 	
 	epoll_mod(epollfd, connfd, EPOLLIN);
 }
