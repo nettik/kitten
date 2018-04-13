@@ -67,9 +67,13 @@ void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 		tq.sockfd = connfd;
 		strcpy(tq.buffer, buffer);
 		
+		pthread_mutex_lock(&lock_task);
+
 		(*task)[connfd] = tq;
 
-		epoll_mod(epollfd, connfd, EPOLLOUT);
+		pthread_mutex_unlock(&lock_task);
+
+		epoll_mod(epollfd, connfd, EPOLLOUT | EPOLLET);
 	}
 }
 
@@ -78,14 +82,14 @@ void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 {
 	char buffer[MAX_SIZE];
 
-	//pthread_mutex_lock(&lock_task);
+	pthread_mutex_lock(&lock_task);
 
 	strcpy(buffer, ((*task)[connfd]).buffer);
 	(*task).erase(connfd);
 
-	//pthread_mutex_unlock(&lock_task);
+	pthread_mutex_unlock(&lock_task);
 
 	send(connfd, buffer, sizeof(buffer), 0);
 	
-	epoll_mod(epollfd, connfd, EPOLLIN);
+	epoll_mod(epollfd, connfd, EPOLLIN | EPOLLET);
 }

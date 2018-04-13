@@ -29,7 +29,7 @@ void do_epoll(int listenfd, unordered_map<int, struct task_queue>* task)
 	int epollfd, nums;
 	struct epoll_event events[EPOLLEVENTS];
 	epollfd = epoll_create(EPOLL_LIS_SIZE);
-	epoll_add(epollfd, listenfd, EPOLLIN);
+	epoll_add(epollfd, listenfd, EPOLLIN | EPOLLET);
 
 	for (;;)
 	{
@@ -41,6 +41,7 @@ void do_epoll(int listenfd, unordered_map<int, struct task_queue>* task)
 void handle_event(int epollfd, struct epoll_event* events, int nums, int listenfd, unordered_map<int, struct task_queue>* task)
 {
 	int fd;
+	//pthread_t tid;
 	for (int i = 0; i < nums; i++)
 	{
 		fd = events[i].data.fd;
