@@ -183,3 +183,15 @@ int epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout)
 ```
 等待事件的产生，参数events用来从内核得到事件的集合，maxevents告知内核这个events有多大，这个maxevents的值不能大于创建epoll_create时的size，参数timeout是超时时间
 该函数返回需要处理的事件数目，返回0表示已超时
+
+# Reactor模式
+Reactor是这样一种模式，它要求主线程(I/O处理单元)只负责监听文件描述上是否有事件发生，有的话就立即将该事件通知工作线程(逻辑单元)。除此以外，主线程不做任何其他实质性的工作。读写数据，接受新的连接，以及处理客户请求均在工作线程中完成。
+使用同步I/O模型(以epoll_wait为例)实现的Reactor模型的工作流程是：  
+1) 主线程往epoll内核事件表中注册socket上的读就绪事件  
+2) 主线程调用epoll_wait等待socket上有数据可读  
+3) 当socket上有数据可读时，epoll_wait通知主线程。主线程则将socket可读事件放入请求队列  
+4) 睡眠在请求队列上的某个工作线程被唤醒，它从socket读取数据，并处理客户请求。然后往epoll内核事件表中注册该socket上的写就绪事件  
+5) 主线程调用epoll_wait等待socket可写  
+6) 当socket可写时，epoll_wait通知主线程。主线程将socket可写事件放入请求队列  
+7) 睡眠在请求队列上的某个工作线程被唤醒，它往socket上写入服务器处理客户请求的结果  
+![image](https://github.com/nettik/kitten/blob/master/basic/picture/Reactor%E6%A8%A1%E5%BC%8F%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
