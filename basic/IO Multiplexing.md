@@ -195,3 +195,17 @@ Reactor是这样一种模式，它要求主线程(I/O处理单元)只负责监�
 6) 当socket可写时，epoll_wait通知主线程。主线程将socket可写事件放入请求队列  
 7) 睡眠在请求队列上的某个工作线程被唤醒，它往socket上写入服务器处理客户请求的结果  
 ![image](https://github.com/nettik/kitten/blob/master/basic/picture/Reactor%E6%A8%A1%E5%BC%8F%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
+
+# 将套接字设置为非阻塞模型
+1) 可以利用socket()函数创建socket时指定创建的socket是非阻塞的
+```
+int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCk, 0);
+```
+2) 可以使用accept4()函数，可以直接将返回的socket设置为非阻塞模式，只要将accept4()最后一个参数flags设置成SOCK_NONBLOCK即可
+```
+int accept4(int sockfd, struct sockaddr* addr, socklen_t* addrlen, int flags);
+```
+3) 调用fcntl()函数
+```
+fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK);
+```
