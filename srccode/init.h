@@ -19,6 +19,7 @@
 #define EPOLL_LIS_SIZE 1000
 #define EPOLLEVENTS 200
 #define MAX_SIZE 1024
+#define THREAD_NUM 4
 
 static pthread_mutex_t lock_task = PTHREAD_MUTEX_INITIALIZER;
 
