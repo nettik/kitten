@@ -4,15 +4,11 @@
 #include "init.h"
 #include "response.h"
 
-
-using namespace std;
-
-
-struct thread_parameter
+struct task_node
 {
-	int epollfd;
-	int sockfd;
-	unordered_map<int, struct task_queue>* taskptr;
+	void* arg;
+	void (*func)(void*);
+	struct task_node* next;
 };
 
 struct thread_pool_info
@@ -23,20 +19,16 @@ struct thread_pool_info
 	pthread_t*         threadid;
 	pthread_mutex_t    task_mutex;
 	pthread_cond_t     task_cond;
-	unordered_map<int, struct task_queue>* taskptr;
+	struct task_node*  head;
 };
 
-void init_thread_pool(int thread_num);
+struct thread_pool_info* init_thread_pool(int thread_num = THREAD_NUM);
 
-void destroy_thread_pool();
+void destroy_thread_pool(struct thread_pool_info* pool);
 
-void thread_pool_add_task(unordered_map<int, struct task_queue>* taskptr);
+void thread_pool_add_task(struct thread_pool_info* pool, void* arg, void (*func)(void*));
 
-struct task_queue thread_pool_retrieve_task();
-
-void thread_pool_do_task(struct task_queue taskptr);
-
-void thread_work(void* thread_para);
+void* thread_pool_work(void* arg);
 
 
 void* thread_work_recv(void* arg);

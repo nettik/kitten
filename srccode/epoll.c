@@ -24,7 +24,7 @@ void epoll_mod(int epollfd, int fd, int state)
 	epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
-void do_epoll(int listenfd, unordered_map<int, struct task_queue>* task)
+void do_epoll(int listenfd, struct thread_pool_info* pool)
 {
 	int epollfd, nums;
 	struct epoll_event events[EPOLLEVENTS];
@@ -34,11 +34,11 @@ void do_epoll(int listenfd, unordered_map<int, struct task_queue>* task)
 	for (;;)
 	{
 		nums = epoll_wait(epollfd, events, EPOLLEVENTS, -1);
-		handle_event(epollfd, events, nums, listenfd, task);
+		handle_event(epollfd, events, nums, listenfd, pool);
 	}
 }
 
-void handle_event(int epollfd, struct epoll_event* events, int nums, int listenfd, unordered_map<int, struct task_queue>* task)
+void handle_event(int epollfd, struct epoll_event* events, int nums, int listenfd, struct thread_pool_info* pool)
 {
 	int fd;
 	//pthread_t tid;
@@ -48,6 +48,8 @@ void handle_event(int epollfd, struct epoll_event* events, int nums, int listenf
 		if ((fd == listenfd) && (events[i].events & EPOLLIN))
 			accept_connection(epollfd, listenfd);
 		else if (events[i].events & EPOLLIN)
+			thread_pool_add_task(pool, (void*)&fd, &do_request);
+		/*else if (events[i].events & EPOLLIN)
 		{
 			struct thread_parameter* para = new thread_parameter();
 			para->epollfd = epollfd;
@@ -69,6 +71,6 @@ void handle_event(int epollfd, struct epoll_event* events, int nums, int listenf
 			pthread_t tid;
 			pthread_create(&tid, NULL, &thread_work_send, para);
 			//do_send(epollfd, fd, task);
-		}
+		}*/
 	}
 }

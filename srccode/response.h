@@ -19,4 +19,5 @@ void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 
 void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* taskptr);
 
+void do_request(void* arg);
 #endif

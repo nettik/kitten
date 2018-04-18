@@ -18,10 +18,9 @@ int main()
 
 	listenfd = socket_bind_listen();
 	
-	unordered_map<int, struct task_queue> task;
+	struct thread_pool_info* pool = init_thread_pool(THREAD_NUM);
 
-
-	do_epoll(listenfd, &task);
+	do_epoll(listenfd, pool);
 
 
 

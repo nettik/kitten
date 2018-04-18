@@ -9,7 +9,7 @@ response.o:response.c response.h init.h
 thread.o:thread.c thread.h
 	g++ -g -c thread.c thread.h -lpthread
 
-epoll.o:epoll.c epoll.h
+epoll.o:epoll.c epoll.h response.h thread.h
 	g++ -g -c epoll.c epoll.h -lpthread
 
 tcpserver.o:tcpserver.c
