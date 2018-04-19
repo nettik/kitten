@@ -125,6 +125,7 @@ void* thread_pool_work(void* arg)  //arg表示线程池pool
 		pthread_mutex_unlock(&(pool->task_mutex));
 
 		(*(task->func))(task->para);
+		free(task->para);
 		free(task);
 	}
 }
