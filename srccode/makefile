@@ -3,7 +3,7 @@ all:client server
 init.o:init.c init.h
 	g++ -g -c init.c init.h
 
-response.o:response.c response.h init.h
+response.o:response.c response.h init.h thread.h
 	g++ -g -c response.c response.h
 
 thread.o:thread.c thread.h

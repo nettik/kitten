@@ -4,10 +4,16 @@
 #include "init.h"
 #include "response.h"
 
+struct task_para
+{
+	int epollfd;
+	int connfd;
+};
+
 struct task_node
 {
-	void* arg;
-	void (*func)(void*);
+	struct task_para* para;
+	void (*func)(struct task_para*);
 	struct task_node* next;
 };
 
@@ -26,7 +32,7 @@ struct thread_pool_info* init_thread_pool(int thread_num = THREAD_NUM);
 
 void destroy_thread_pool(struct thread_pool_info* pool);
 
-void thread_pool_add_task(struct thread_pool_info* pool, void* arg, void (*func)(void*));
+void thread_pool_add_task(struct thread_pool_info* pool, struct task_para* arg, void (*func)(struct task_para*));
 
 void* thread_pool_work(void* arg);
 

@@ -43,7 +43,7 @@ struct thread_pool_info* init_thread_pool(int thread_num)
 	pthread_cond_init(&(pool->task_cond), NULL);
 
 	pool->head = (struct task_node*)malloc(sizeof(task_node));
-	pool->head->arg = NULL;
+	pool->head->para = NULL;
 	pool->head->func = NULL;
 	pool->head->next = NULL;
 
@@ -61,6 +61,7 @@ static void destroy_task_node(struct thread_pool_info* pool)
 	{
 		temp = pool->head->next;
 		pool->head->next = pool->head->next->next;
+		free(temp->para);
 		free(temp);
 	}
 	free(pool->head);
@@ -84,12 +85,14 @@ void destroy_thread_pool(struct thread_pool_info* pool)
 	free(pool);
 }
 
-void thread_pool_add_task(struct thread_pool_info* pool, void* arg, void (*func)(void*))
+void thread_pool_add_task(struct thread_pool_info* pool, struct task_para* arg, void (*func)(struct task_para*))
 {
 	pthread_mutex_lock(&(pool->task_mutex));
 	
 	struct task_node* task = (struct task_node*)malloc(sizeof(task_node));
-	task->arg = arg;
+	task->para = (struct task_para*)malloc(sizeof(task_para));
+	task->para->epollfd = arg->epollfd;
+	task->para->connfd = arg->connfd;
 	task->func = func;
 	
 	task->next = pool->head->next;
@@ -101,7 +104,7 @@ void thread_pool_add_task(struct thread_pool_info* pool, void* arg, void (*func)
 	pthread_mutex_unlock(&(pool->task_mutex));
 }
 
-void* thread_pool_work(void* arg)
+void* thread_pool_work(void* arg)  //arg表示线程池pool
 {
 	struct thread_pool_info* pool = (struct thread_pool_info*)arg;
 	struct task_node* task;
@@ -121,7 +124,7 @@ void* thread_pool_work(void* arg)
 		--pool->task_num;
 		pthread_mutex_unlock(&(pool->task_mutex));
 
-		(*(task->func))(task->arg);
+		(*(task->func))(task->para);
 		free(task);
 	}
 }

@@ -48,7 +48,13 @@ void handle_event(int epollfd, struct epoll_event* events, int nums, int listenf
 		if ((fd == listenfd) && (events[i].events & EPOLLIN))
 			accept_connection(epollfd, listenfd);
 		else if (events[i].events & EPOLLIN)
-			thread_pool_add_task(pool, (void*)&fd, &do_request);
+		{
+			struct task_para* p = (struct task_para*)malloc(sizeof(task_para));
+			p->epollfd = epollfd;
+			p->connfd = fd;
+			
+			thread_pool_add_task(pool, p, &do_request);
+		}
 		/*else if (events[i].events & EPOLLIN)
 		{
 			struct thread_parameter* para = new thread_parameter();

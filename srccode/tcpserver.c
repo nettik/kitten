@@ -34,5 +34,7 @@ int main()
 		pthread_create(&tid, NULL, &thread_work, (void*)connfd);
 	}*/
 	
+	destroy_thread_pool(pool);
+
 	close(listenfd);
 }

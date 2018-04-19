@@ -2,6 +2,7 @@
 #define RESPONSE_H
  
 #include "init.h"
+#include "thread.h"
 
 using namespace std;
 
@@ -19,5 +20,5 @@ void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 
 void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* taskptr);
 
-void do_request(void* arg);
+void do_request(struct task_para* arg);
 #endif
