@@ -9,9 +9,8 @@
 #include <arpa/inet.h>    //inet_ntop()
 #include <unistd.h>       //close()
 #include <string.h>
-#include <unordered_map>
 #include <sys/epoll.h>
-#include <malloc.h>       //free()
+#include <malloc.h>       //free(), malloc()
 
 #define PORT 4000
 #define IPADDR INADDR_ANY
@@ -20,8 +19,6 @@
 #define EPOLLEVENTS 200
 #define MAX_SIZE 1024
 #define THREAD_NUM 4
-
-static pthread_mutex_t lock_task = PTHREAD_MUTEX_INITIALIZER;
 
 typedef sockaddr SA;
 

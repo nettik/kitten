@@ -2,10 +2,7 @@
 #include "init.h"
 #include "thread.h"
 #include "epoll.h"
-#include <unordered_map>
 
-
-using namespace std;
 
 //pthread_mutex_t lock_task = PTHREAD_MUTEX_INITIALIZER;
 

@@ -2,7 +2,6 @@
 #define THREAD_H
 
 #include "init.h"
-#include "response.h"
 
 struct task_para
 {

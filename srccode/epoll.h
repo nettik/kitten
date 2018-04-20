@@ -5,7 +5,6 @@
 #include "thread.h"
 #include "response.h"
 
-using namespace std;
 
 
 void do_epoll(int listenfd, struct thread_pool_info* pool);

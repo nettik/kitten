@@ -1,7 +1,6 @@
 #include "response.h"
-#include "epoll.h"
 
-void string_echo(int connfd)
+/*void string_echo(int connfd)
 {
 	char buffer[MAX_SIZE];
 	ssize_t n;
@@ -27,7 +26,7 @@ void string_echo(int connfd)
 		printf("receive from %s : %d : %s\n", IPaddr, port, buffer);
 		send(connfd, buffer, n, 0);
 	}
-}
+}*/
 
 void accept_connection(int epollfd, int listenfd)
 {
@@ -39,7 +38,7 @@ void accept_connection(int epollfd, int listenfd)
 	epoll_add(epollfd, connfd, EPOLLIN | EPOLLET);
 }
 
-void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* task)
+/*void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* task)
 {
 	char buffer[MAX_SIZE];
 	ssize_t n;
@@ -92,7 +91,7 @@ void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* tas
 	send(connfd, buffer, sizeof(buffer), 0);
 	
 	epoll_mod(epollfd, connfd, EPOLLIN | EPOLLET);
-}
+}*/
 
 void do_request(struct task_para* arg)
 {
