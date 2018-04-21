@@ -4,13 +4,14 @@
 #include <netinet/in.h>   //struct sockaddr_in, htonl(), htons()
 #include <string.h>       //bzero()
 #include <sys/socket.h>   //socket(), bind(), listen()
-#include <pthread.h>      //pthread_create(), pthread_detach()
+#include <pthread.h>      //pthread_create(), pthread_join()
 #include <stdio.h>        //printf()
 #include <arpa/inet.h>    //inet_ntop()
 #include <unistd.h>       //close()
 #include <string.h>
 #include <sys/epoll.h>
 #include <malloc.h>       //free(), malloc()
+#include <fcntl.h>        //fcntl()
 
 #define PORT 4000
 #define IPADDR INADDR_ANY
@@ -25,5 +26,6 @@ typedef sockaddr SA;
 
 int socket_bind_listen();
 
+void make_socket_nonblock(int sockfd);
 
 #endif
