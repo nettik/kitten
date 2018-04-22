@@ -6,16 +6,45 @@ void do_request(struct task_para* arg)
 	int epollfd = arg->epollfd;
 	char buffer[MAX_SIZE];
 	ssize_t n;
-	n = recv(connfd, buffer, sizeof(buffer), 0);
+	ssize_t sum = 0;
+	for (;;)
+	{
+		char tempbuffer[MAX_SIZE];
+		n = recv(connfd, tempbuffer, sizeof(tempbuffer), 0);
+		if (n > 0)
+		{
+			strcat(buffer, tempbuffer);
+			sum += n;
+		}
+		else if (n < 0)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				break;
+			else if (errno == EINTR)
+				continue;
+			else
+			{
+				close(connfd);
+				epoll_del(epollfd, connfd, EPOLLIN | EPOLLET);
+				break;
+			}
+		}
+		else if (n == 0)
+		{
+			close(connfd);
+			epoll_del(epollfd, connfd, EPOLLIN | EPOLLET);
+			break;
+		}
+	}
+	buffer[sum] = '\0';
+	/*n = recv(connfd, buffer, sizeof(buffer), 0);
 	if (n <= 0)
 	{
 		close(connfd);
 		epoll_del(epollfd, connfd, EPOLLIN | EPOLLET);
-	}
-	else if (n > 0)
+	}*/
+	if (sum > 0)
 	{
-		buffer[n] = '\0';
-
 		struct sockaddr_in cliaddr;
 		socklen_t clilen = sizeof(cliaddr);
 		getpeername(connfd, (SA*)&cliaddr, &clilen);

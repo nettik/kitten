@@ -4,8 +4,10 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+#include <iostream>
+#include <string>
 #define MAX_SIZE 1024
+
 
 typedef sockaddr SA;
 
@@ -24,7 +26,7 @@ int main()
 	connect(sockfd, (SA*)&seraddr, sizeof(seraddr));
 
 	char sendbuffer[MAX_SIZE];
-	while (scanf("%s", sendbuffer))
+	while (std::cin.getline(sendbuffer, sizeof(sendbuffer)))
 	{
 		//printf("to be sent : %s\n", sendbuffer);
 		if (strcmp(sendbuffer, "quit") == 0)

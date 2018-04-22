@@ -1,16 +1,16 @@
 all:client server
 
-init.o:init.c init.h
-	g++ -g -c init.c init.h
+init.o:init.c
+	g++ -g -c init.c
 
-response.o:response.c response.h
-	g++ -g -c response.c response.h
+response.o:response.c
+	g++ -g -c response.c
 
-thread.o:thread.c thread.h
-	g++ -g -c thread.c thread.h
+thread.o:thread.c
+	g++ -g -c thread.c
 
-epoll.o:epoll.c epoll.h
-	g++ -g -c epoll.c epoll.h
+epoll.o:epoll.c
+	g++ -g -c epoll.c
 
 tcpserver.o:tcpserver.c
 	g++ -g -c  tcpserver.c
@@ -22,4 +22,4 @@ client:tcpclient.c
 	g++ -g -o client tcpclient.c
 
 clean:
-	rm *.h.gch *.o server client
+	rm  *.o server client

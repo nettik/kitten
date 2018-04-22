@@ -12,6 +12,7 @@
 #include <sys/epoll.h>
 #include <malloc.h>       //free(), malloc()
 #include <fcntl.h>        //fcntl()
+#include <errno.h>
 
 #define PORT 4000
 #define IPADDR INADDR_ANY

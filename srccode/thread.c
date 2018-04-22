@@ -121,7 +121,7 @@ void* thread_pool_work(void* arg)  //arg表示线程池pool
 			continue;
 		}
 		pool->head->next = task->next;
-		--pool->task_num;
+		--(pool->task_num);
 		pthread_mutex_unlock(&(pool->task_mutex));
 
 		(*(task->func))(task->para);
