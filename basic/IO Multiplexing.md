@@ -181,7 +181,7 @@ events可以是以下几个宏的集合
 #include <sys/epoll.h>
 int epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout);
 ```
-等待事件的产生，参数events用来从内核得到事件的集合，maxevents告知内核这个events有多大，这个maxevents的值不能大于创建epoll_create时的size，参数timeout是超时时间
+等待事件的产生，参数events用来从内核得到事件的集合，maxevents告知内核这个events有多大，这个maxevents的值不能大于创建epoll_create时的size，参数timeout是超时时间  
 该函数返回需要处理的事件数目，返回0表示已超时
 
 # Reactor模式
