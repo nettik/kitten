@@ -39,8 +39,10 @@ struct thread_pool_info* init_thread_pool(int thread_num)
 	pool->thread_num = thread_num;
 	pool->task_num = 0;
 
-	pthread_mutex_init(&(pool->task_mutex), NULL);
-	pthread_cond_init(&(pool->task_cond), NULL);
+	if (pthread_mutex_init(&(pool->task_mutex), NULL) != 0)
+		perror("pthread_mutex_init");
+	if (pthread_cond_init(&(pool->task_cond), NULL) != 0)
+		perror("pthread_cond_init");
 
 	pool->head = (struct task_node*)malloc(sizeof(task_node));
 	pool->head->para = NULL;
@@ -75,11 +77,13 @@ void destroy_thread_pool(struct thread_pool_info* pool)
 
 	for (int i = 0; i < pool->thread_num; ++i)
 		pthread_join(pool->threadid[i], NULL);
-
+	
 	free(pool->threadid);
 
-	pthread_mutex_destroy(&(pool->task_mutex));
-	pthread_cond_destroy(&(pool->task_cond));
+	if (pthread_mutex_destroy(&(pool->task_mutex)) != 0)
+		perror("pthread_mutex_destroy");
+	if (pthread_cond_destroy(&(pool->task_cond)) != 0)
+		perror("pthread_cond_destroy");
 
 	destroy_task_node(pool);
 	free(pool);

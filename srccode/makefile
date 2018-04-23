@@ -3,8 +3,8 @@ all:client server
 init.o:init.c
 	g++ -g -c init.c
 
-response.o:response.c
-	g++ -g -c response.c
+request_and_response.o:request_and_response.c
+	g++ -g -c request_and_response.c
 
 thread.o:thread.c
 	g++ -g -c thread.c
@@ -15,8 +15,8 @@ epoll.o:epoll.c
 tcpserver.o:tcpserver.c
 	g++ -g -c  tcpserver.c
 
-server:tcpserver.o response.o init.o thread.o epoll.o
-	g++ -g -o server tcpserver.o response.o init.o thread.o epoll.o -lpthread
+server:tcpserver.o request_and_response.o init.o thread.o epoll.o
+	g++ -g -o server tcpserver.o request_and_response.o init.o thread.o epoll.o -lpthread
 
 client:tcpclient.c
 	g++ -g -o client tcpclient.c

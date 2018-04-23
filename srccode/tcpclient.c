@@ -32,7 +32,7 @@ int main()
 		if (strcmp(sendbuffer, "quit") == 0)
 			break;
 
-		send(sockfd, sendbuffer, strlen(sendbuffer), 0);
+		send(sockfd, sendbuffer, sizeof(sendbuffer), 0);
 
 		ssize_t n;
 		char recvbuffer[MAX_SIZE];
@@ -41,5 +41,6 @@ int main()
 
 		printf("echo from server : %s\n", recvbuffer);
 	}
-	close(sockfd);
+	//printf("shutdown now client\n");
+	shutdown(sockfd, SHUT_WR);
 }

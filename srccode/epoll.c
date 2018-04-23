@@ -1,41 +1,51 @@
 #include "epoll.h"
 
-void epoll_add(int epollfd, int fd, int state)
+int epoll_add(int epollfd, int fd, int state)
 {
 	struct epoll_event ev;
 	ev.events = state;
 	ev.data.fd = fd;
-	epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) < 0)
+		return -1;
+	return 0;
 }
 
-void epoll_del(int epollfd, int fd, int state)
+int epoll_del(int epollfd, int fd, int state)
 {
 	struct epoll_event ev;
 	ev.events = state;
 	ev.data.fd = fd;
-	epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, &ev);
+	if (epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, &ev) < 0)
+		return -1;
+	return 0;
 }
 
-void epoll_mod(int epollfd, int fd, int state)
+int epoll_mod(int epollfd, int fd, int state)
 {
 	struct epoll_event ev;
 	ev.events = state;
 	ev.data.fd = fd;
-	epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
+	if (epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev) < 0)
+		return -1;
+	return 0;
 }
 
 void do_epoll(int listenfd, struct thread_pool_info* pool)
 {
 	int epollfd, nums;
 	struct epoll_event events[EPOLLEVENTS];
-	epollfd = epoll_create(EPOLL_LIS_SIZE);
-	epoll_add(epollfd, listenfd, EPOLLIN | EPOLLET);
+	if ((epollfd = epoll_create(EPOLL_LIS_SIZE)) < 0)
+		perror("epoll_create");
+	if (epoll_add(epollfd, listenfd, EPOLLIN | EPOLLET) < 0)
+		perror("epoll_cnt_add_listenfd");
 
 	for (;;)
 	{
-		nums = epoll_wait(epollfd, events, EPOLLEVENTS, -1);
+		if ((nums = epoll_wait(epollfd, events, EPOLLEVENTS, -1)) < 0)
+			perror("epoll_wait");
 		handle_event(epollfd, events, nums, listenfd, pool);
 	}
+	close(epollfd);
 }
 
 void handle_event(int epollfd, struct epoll_event* events, int nums, int listenfd, struct thread_pool_info* pool)
@@ -46,7 +56,10 @@ void handle_event(int epollfd, struct epoll_event* events, int nums, int listenf
 	{
 		fd = events[i].data.fd;
 		if ((fd == listenfd) && (events[i].events & EPOLLIN))
-			accept_connection(epollfd, listenfd);
+		{
+			if (accept_connection(epollfd, listenfd) < 0)
+				perror("accept_connection");
+		}
 		else if (events[i].events & EPOLLIN)
 		{
 			struct task_para* p = (struct task_para*)malloc(sizeof(task_para));

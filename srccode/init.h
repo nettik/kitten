@@ -13,6 +13,7 @@
 #include <malloc.h>       //free(), malloc()
 #include <fcntl.h>        //fcntl()
 #include <errno.h>
+#include <stdio.h>        //perror()
 
 #define PORT 4000
 #define IPADDR INADDR_ANY
@@ -27,6 +28,6 @@ typedef sockaddr SA;
 
 int socket_bind_listen();
 
-void make_socket_nonblock(int sockfd);
+int make_socket_nonblock(int sockfd);
 
 #endif
