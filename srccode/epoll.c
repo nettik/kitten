@@ -42,7 +42,11 @@ void do_epoll(int listenfd, struct thread_pool_info* pool)
 	for (;;)
 	{
 		if ((nums = epoll_wait(epollfd, events, EPOLLEVENTS, -1)) < 0)
+		{
 			perror("epoll_wait");
+			if (errno == EINTR)
+				continue;
+		}
 		handle_event(epollfd, events, nums, listenfd, pool);
 	}
 	close(epollfd);

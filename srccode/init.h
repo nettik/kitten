@@ -2,7 +2,7 @@
 #define INIT_H
 
 #include <netinet/in.h>   //struct sockaddr_in, htonl(), htons()
-#include <string.h>       //bzero()
+#include <string.h>       //bzero(), strncpy()
 #include <sys/socket.h>   //socket(), bind(), listen()
 #include <pthread.h>      //pthread_create(), pthread_join()
 #include <stdio.h>        //printf()
@@ -13,7 +13,8 @@
 #include <malloc.h>       //free(), malloc()
 #include <fcntl.h>        //fcntl()
 #include <errno.h>
-#include <stdio.h>        //perror()
+#include <stdio.h>        //perror(), sprintf()
+#include <string>         //string
 
 #define PORT 4000
 #define IPADDR INADDR_ANY
@@ -21,7 +22,9 @@
 #define EPOLL_LIS_SIZE 1000
 #define EPOLLEVENTS 200
 #define MAX_SIZE 1024
+#define BUF_SIZE 512
 #define THREAD_NUM 4
+#define DEFAULT_PATH "~/kitten/webpage/"
 
 typedef sockaddr SA;
 

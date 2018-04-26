@@ -4,52 +4,20 @@ void do_request(struct task_para* arg)
 {
 	int connfd = arg->connfd;
 	int epollfd = arg->epollfd;
-	char buffer[MAX_SIZE];
-	ssize_t n;
-	ssize_t sum = 0;
-	bool clientclosed = false;
-	for (;;)
+	char* buffer = receive_request_from_client(connfd, epollfd);
+	
+	struct http_request_info keyinfo;
+	
+	if (buffer != NULL)
 	{
-		char tempbuffer[MAX_SIZE];
-		n = recv(connfd, tempbuffer, sizeof(tempbuffer), 0);
-		if (n > 0)
-		{
-			for (int i = 0; i < n; ++i)
-				buffer[sum++] = tempbuffer[i];		
-		}
-		else if (n < 0)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				break;
-			else if (errno == EINTR)
-				continue;
-			else
-			{
-				clientclosed = true;
-				break;
-			}
-		}
-		else if (n == 0)
-		{
-			clientclosed = true;
-			break;
-		}
+		int start = parse_request_line(buffer, &keyinfo);
+
+		printf("method : %s\n", keyinfo.method);
+		printf("url : %s\n", keyinfo.url);
+		printf("version : %s\n", keyinfo.version);
 	}
-	if (clientclosed == true)
-	{
-		if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
-			perror("epoll_del_connfd");
-		shutdown(connfd, SHUT_WR);
-		return;
-	}
-	buffer[sum] = '\0';
-	/*n = recv(connfd, buffer, sizeof(buffer), 0);
-	if (n <= 0)
-	{
-		close(connfd);
-		epoll_del(epollfd, connfd, EPOLLIN | EPOLLET);
-	}*/
-	if (sum > 0)
+
+	/*if (buffer != NULL)
 	{
 		struct sockaddr_in cliaddr;
 		socklen_t clilen = sizeof(cliaddr);
@@ -63,9 +31,96 @@ void do_request(struct task_para* arg)
 
 		printf("thread %d receive from %s : %d : %s\n", (int)pthread_self(), IPaddr, port, buffer);
 
-		send(connfd, buffer, sizeof(buffer), 0);
-	}
+		send(connfd, buffer, strlen(buffer), 0);
+
+		free(buffer);
+	}*/
 }
+
+char* receive_request_from_client(int connfd, int epollfd)
+{
+	char* buffer = (char*)malloc(sizeof(char) * BUF_SIZE);
+	ssize_t n;
+	int buf_length = 1;
+	bool clientclosed = false;
+	int sum = 0;
+	for (;;)
+	{
+		char tempbuffer[MAX_SIZE];
+		n = recv(connfd, tempbuffer, sizeof(tempbuffer), 0);
+		if (n == 0)
+		{
+			clientclosed = true;
+			break;
+		}
+		else if (n < 0)
+		{
+			if (errno == EINTR)
+				continue;
+			else if (errno == EAGAIN)
+				break;
+			else
+			{
+				clientclosed = true;
+				break;
+			}
+		}
+		else if (n > 0)
+		{
+			while ((sum + n) >= buf_length * BUF_SIZE)
+			{
+				buffer = (char*)realloc(buffer, buf_length * 2 * BUF_SIZE * sizeof(char));
+				buf_length *= 2;
+			}
+			int i = 0;
+			while (i < n && tempbuffer[i] != '\0')
+				buffer[sum++] = tempbuffer[i++];
+		}
+	}
+	if (clientclosed == true)
+	{
+		shutdown(connfd, SHUT_WR);
+		if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
+			perror("epoll_del_connfd");
+	}
+	if (sum == 0)
+	{
+		free(buffer);
+		return NULL;
+	}
+	return buffer;
+}
+/*int get_oneline(int connfd, char* buf, int buffsize, int& clienton)
+{
+	int len = 0;
+	char temp = '\0';
+	ssize_t n;
+	while ((len < buffsize - 1) && (temp != '\n'))
+	{
+		n = recv(connfd, &temp, sizeof(temp), 0);
+		if (n > 0)
+		{
+			if (temp == '\r')
+			{
+				n = recv(connfd, &temp, sizeof(temp), MSG_PEEK);
+				if (n > 0 && temp == '\n')
+					recv(connfd, &temp, sizeof(temp), 0);
+				else
+					temp = '\n';
+			}
+			buf[len++] = temp;
+		}
+		//else if (n == 0)
+		//{
+		//	clienton = 0;
+		//	temp = '\n';
+		//}
+		else
+			temp = '\n';
+	}
+	buf[len] = '\0';
+	return len;
+}*/
 
 int accept_connection(int epollfd, int listenfd)
 {
