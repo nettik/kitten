@@ -24,7 +24,7 @@
 #define MAX_SIZE 1024
 #define BUF_SIZE 512
 #define THREAD_NUM 4
-#define DEFAULT_PATH "~/kitten/webpage/"
+#define DEFAULT_PATH "/home/meow/kitten/webpage"
 
 typedef sockaddr SA;
 

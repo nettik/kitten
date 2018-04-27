@@ -14,7 +14,10 @@ void do_request(struct task_para* arg)
 
 		printf("method : %s\n", keyinfo.method);
 		printf("url : %s\n", keyinfo.url);
+		printf("path : %s\n", keyinfo.path);
 		printf("version : %s\n", keyinfo.version);
+
+		server_static_file(keyinfo.path, connfd, epollfd);
 	}
 
 	/*if (buffer != NULL)
@@ -36,6 +39,30 @@ void do_request(struct task_para* arg)
 		free(buffer);
 	}*/
 }
+
+void server_static_file(char* path, int connfd, int epollfd)
+{
+	FILE* resource = fopen(path, "r");
+	if (resource == NULL)
+		perror("openfile");
+	else
+	{
+		header_200OK(connfd);
+		char buf[MAX_SIZE];
+		memset(buf, 0, sizeof(buf));
+		//fgets(buf, sizeof(buf), resource);
+		while (!feof(resource))
+		{
+			//send(connfd, buf, sizeof(buf), 0);
+			fgets(buf, sizeof(buf), resource);
+			send(connfd, buf, strlen(buf), 0);
+		}
+	}
+	fclose(resource);
+	//epoll_del(epollfd, connfd, EPOLLIN | EPOLLET);
+	//shutdown(connfd, SHUT_WR);
+}
+
 
 char* receive_request_from_client(int connfd, int epollfd)
 {
@@ -79,9 +106,9 @@ char* receive_request_from_client(int connfd, int epollfd)
 	}
 	if (clientclosed == true)
 	{
-		shutdown(connfd, SHUT_WR);
 		if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
 			perror("epoll_del_connfd");
+		shutdown(connfd, SHUT_WR);
 	}
 	if (sum == 0)
 	{
@@ -146,6 +173,19 @@ int accept_connection(int epollfd, int listenfd)
 		return -1;
 	}
 	return 0;
+}
+
+void header_200OK(int connfd)
+{
+	char buf[MAX_SIZE];
+	strcpy(buf, "HTTP/1.0 200 OK\r\n");
+	send(connfd, buf, strlen(buf), 0);
+	strcpy(buf, "Server: Kitten\r\n");
+	send(connfd, buf, strlen(buf), 0);
+	strcpy(buf, "Content-Type: text/html\r\n");
+	send(connfd, buf, strlen(buf), 0);
+	strcpy(buf, "\r\n");
+	send(connfd, buf, strlen(buf), 0);
 }
 
 /*void string_echo(int connfd)

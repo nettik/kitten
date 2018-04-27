@@ -11,6 +11,10 @@ void do_request(struct task_para* arg);
 
 char* receive_request_from_client(int connfd, int epollfd);
 
+void server_static_file(char* path, int connfd, int epollfd);
+
+void header_200OK(int connfd);
+
 //int get_oneline(int connfd, char* buff, int buffsize, int& clienton);
 
 /*struct task_queue

@@ -17,12 +17,13 @@ struct http_request_info
 		memset(version, 0, sizeof(version));
 		memset(connect_status, 0, sizeof(connect_status));
 		if (sprintf(path, "%s", DEFAULT_PATH) < 0)
-			perror("sprintf");
+			perror("sprintf_path");
 	}
 };
 
 
 int parse_request_line(char* buffer, struct http_request_info* keyinfo);
 
+void destroy_http_request_info(struct http_request_info* keyinfo);
 
 #endif

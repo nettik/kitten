@@ -20,6 +20,10 @@ int parse_request_line(char* buffer, struct http_request_info* keyinfo)
 	strncpy(url, buffer + url_start, i - url_start);
 	url[i - url_start] = '\0';
 	keyinfo->url = url;	
+
+	strcat(keyinfo->path, url);
+	if (keyinfo->path[strlen(keyinfo->path) - 1] == '/')
+		strcat(keyinfo->path, "index.html");
 	
 	//version
 	++i;
