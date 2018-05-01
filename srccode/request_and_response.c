@@ -12,12 +12,23 @@ void do_request(struct task_para* arg)
 	{
 		int start = parse_request_line(buffer, &keyinfo);
 
-		printf("method : %s\n", keyinfo.method);
-		printf("url : %s\n", keyinfo.url);
+		/*printf("method : %s\n", keyinfo.method);
+		printf("GET_para : %s\n", keyinfo.GET_para);
 		printf("path : %s\n", keyinfo.path);
-		printf("version : %s\n", keyinfo.version);
+		printf("version : %s\n", keyinfo.version);*/
 
-		server_static_file(keyinfo.path, connfd, epollfd);
+		serve_static_file(keyinfo.path, connfd, epollfd, &keyinfo);
+		
+		start = 0;
+		while (start < strlen(buffer) + 1)
+		{
+			char tempbuffer[MAX_SIZE];
+			memset(tempbuffer, 0, sizeof(tempbuffer));
+			int t = get_header_field_from_buffer(start, buffer, tempbuffer);
+			printf("%s\n", tempbuffer);
+			start = t;
+		}
+
 	}
 
 	/*if (buffer != NULL)
@@ -40,14 +51,17 @@ void do_request(struct task_para* arg)
 	}*/
 }
 
-void server_static_file(char* path, int connfd, int epollfd)
+void serve_static_file(char* path, int connfd, int epollfd, struct http_request_info* keyinfo)
 {
 	FILE* resource = fopen(path, "r");
 	if (resource == NULL)
-		perror("openfile");
+	{
+		header_404_Not_Found(connfd);
+	}
 	else
 	{
-		header_200OK(connfd);
+		header_200_OK(connfd, keyinfo);
+		
 		char buf[MAX_SIZE];
 		memset(buf, 0, sizeof(buf));
 		//fgets(buf, sizeof(buf), resource);
@@ -57,16 +71,20 @@ void server_static_file(char* path, int connfd, int epollfd)
 			fgets(buf, sizeof(buf), resource);
 			send(connfd, buf, strlen(buf), 0);
 		}
+		fclose(resource);
 	}
-	fclose(resource);
-	//epoll_del(epollfd, connfd, EPOLLIN | EPOLLET);
-	//shutdown(connfd, SHUT_WR);
+	//fclose(resource);
+	if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
+		perror("epoll_del_connfd_in_server_static_file");
+	shutdown(connfd, SHUT_WR);
+	close(connfd);
 }
 
 
 char* receive_request_from_client(int connfd, int epollfd)
 {
 	char* buffer = (char*)malloc(sizeof(char) * BUF_SIZE);
+	memset(buffer, 0, sizeof(buffer));
 	ssize_t n;
 	int buf_length = 1;
 	bool clientclosed = false;
@@ -107,47 +125,30 @@ char* receive_request_from_client(int connfd, int epollfd)
 	if (clientclosed == true)
 	{
 		if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
-			perror("epoll_del_connfd");
+			perror("epoll_del_connfd_in_receive_request_from_client");
 		shutdown(connfd, SHUT_WR);
+		close(connfd);
 	}
 	if (sum == 0)
 	{
 		free(buffer);
 		return NULL;
 	}
+	buffer[sum] = '\0';
 	return buffer;
 }
-/*int get_oneline(int connfd, char* buf, int buffsize, int& clienton)
+int get_header_field_from_buffer(int start, char* buf, char* tempbuf)   //从缓冲区获取首部字段值
 {
-	int len = 0;
-	char temp = '\0';
-	ssize_t n;
-	while ((len < buffsize - 1) && (temp != '\n'))
-	{
-		n = recv(connfd, &temp, sizeof(temp), 0);
-		if (n > 0)
-		{
-			if (temp == '\r')
-			{
-				n = recv(connfd, &temp, sizeof(temp), MSG_PEEK);
-				if (n > 0 && temp == '\n')
-					recv(connfd, &temp, sizeof(temp), 0);
-				else
-					temp = '\n';
-			}
-			buf[len++] = temp;
-		}
-		//else if (n == 0)
-		//{
-		//	clienton = 0;
-		//	temp = '\n';
-		//}
-		else
-			temp = '\n';
-	}
-	buf[len] = '\0';
-	return len;
-}*/
+	int index = start;
+	while (start < strlen(buf) + 1 && buf[start] != '\r')
+		++start;
+	
+	strncpy(tempbuf, buf + index, start - index);
+	tempbuf[start - index] = '\0';
+
+	start = start + 2;
+	return start;
+}
 
 int accept_connection(int epollfd, int listenfd)
 {
@@ -173,19 +174,6 @@ int accept_connection(int epollfd, int listenfd)
 		return -1;
 	}
 	return 0;
-}
-
-void header_200OK(int connfd)
-{
-	char buf[MAX_SIZE];
-	strcpy(buf, "HTTP/1.0 200 OK\r\n");
-	send(connfd, buf, strlen(buf), 0);
-	strcpy(buf, "Server: Kitten\r\n");
-	send(connfd, buf, strlen(buf), 0);
-	strcpy(buf, "Content-Type: text/html\r\n");
-	send(connfd, buf, strlen(buf), 0);
-	strcpy(buf, "\r\n");
-	send(connfd, buf, strlen(buf), 0);
 }
 
 /*void string_echo(int connfd)

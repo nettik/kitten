@@ -4,6 +4,7 @@
 #include "init.h"
 #include "epoll.h"
 #include "parse_http_request.h"
+#include "status_code.h"
 
 int accept_connection(int epollfd, int listenfd);
 
@@ -11,11 +12,9 @@ void do_request(struct task_para* arg);
 
 char* receive_request_from_client(int connfd, int epollfd);
 
-void server_static_file(char* path, int connfd, int epollfd);
+void serve_static_file(char* path, int connfd, int epollfd, struct http_request_info* keyinfo);
 
-void header_200OK(int connfd);
-
-//int get_oneline(int connfd, char* buff, int buffsize, int& clienton);
+int get_header_field_from_buffer(int start, char* buf, char* tempbuf);
 
 /*struct task_queue
 {

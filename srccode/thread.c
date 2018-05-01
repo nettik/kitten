@@ -101,7 +101,7 @@ void thread_pool_add_task(struct thread_pool_info* pool, struct task_para* arg, 
 	
 	task->next = pool->head->next;
 	pool->head->next = task;
-	pool->task_num++;
+	(pool->task_num)++;
 
 	pthread_cond_signal(&(pool->task_cond));
 		
@@ -115,7 +115,7 @@ void* thread_pool_work(void* arg)  //arg表示线程池pool
 	while (pool->thread_run)
 	{
 		pthread_mutex_lock(&(pool->task_mutex));
-		while (pool->thread_num == 0)
+		while ((pool->task_num) == 0)
 			pthread_cond_wait(&(pool->task_cond), &(pool->task_mutex));
 		
 		task = pool->head->next;
