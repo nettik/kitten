@@ -28,7 +28,6 @@ int main()
 	char sendbuffer[MAX_SIZE];
 	while (std::cin.getline(sendbuffer, sizeof(sendbuffer)))
 	{
-		//printf("to be sent : %s\n", sendbuffer);
 		if (strcmp(sendbuffer, "quit") == 0)
 			break;
 
@@ -41,6 +40,5 @@ int main()
 
 		printf("echo from server : %s\n", recvbuffer);
 	}
-	//printf("shutdown now client\n");
 	shutdown(sockfd, SHUT_WR);
 }

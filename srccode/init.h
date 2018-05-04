@@ -15,22 +15,24 @@
 #include <errno.h>
 #include <stdio.h>        //perror(), sprintf()
 #include <string>         //string
+#include <signal.h>
 
 #define PORT 4000
 #define IPADDR INADDR_ANY
-#define LIS_QUEUE_SIZE 5
+#define LIS_QUEUE_SIZE 50
 #define EPOLL_LIS_SIZE 1000
 #define EPOLLEVENTS 200
 #define MAX_SIZE 1024
 #define BUF_SIZE 512
-#define THREAD_NUM 4
+#define THREAD_NUM 3
 #define DEFAULT_PATH "/home/meow/kitten/webpage"
 
 typedef sockaddr SA;
 
-
 int socket_bind_listen();
 
 int make_socket_nonblock(int sockfd);
+
+void handle_sigpipe();
 
 #endif

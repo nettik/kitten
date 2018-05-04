@@ -5,8 +5,6 @@
 #include "thread.h"
 #include "request_and_response.h"
 
-
-
 void do_epoll(int listenfd, struct thread_pool_info* pool);
 
 void handle_event(int epollfd, struct epoll_event* events, int num, int listenfd, struct thread_pool_info* pool);

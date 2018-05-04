@@ -44,6 +44,8 @@ void parse_url(char* url, struct http_request_info* keyinfo);
 
 int parse_request_line(char* buffer, struct http_request_info* keyinfo);
 
-void destroy_http_request_info(struct http_request_info* keyinfo);
+void parse_header_field(char* buffer, int start, struct http_request_info* keyinfo);
+
+//void destroy_http_request_info(struct http_request_info* keyinfo);
 
 #endif

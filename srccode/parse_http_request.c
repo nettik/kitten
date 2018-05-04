@@ -14,17 +14,14 @@ struct mime_type MIME[]=
 void set_file_type(char* path, struct http_request_info* keyinfo)
 {
 	int dot_index = -1;
-	for (int i = 0; i < strlen(path) + 1; ++i)
+	for (unsigned int i = 0; i < strlen(path) + 1; ++i)
 		if (path[i] == '.')
 		{
 			dot_index = i;
 			break;
 		}
-	/*char temp_filetype[20];
-	memset(temp_filetype, 0, sizeof(temp_filetype));
-	strcpy(temp_filetype, path + dot_index);*/
 	int i = 0;
-	while (i < sizeof(MIME)/sizeof(struct mime_type) && MIME[i].type != NULL)
+	while ((unsigned)i < sizeof(MIME)/sizeof(struct mime_type) && MIME[i].type != NULL)
 	{
 		if (strcmp(path + dot_index, MIME[i].type) == 0)
 		{
@@ -40,11 +37,11 @@ void set_file_type(char* path, struct http_request_info* keyinfo)
 void parse_url(char* url, struct http_request_info* keyinfo)
 {
 	int j = 0;
-	while (j < strlen(url) + 1 && url[j] != '?')
+	while ((unsigned)j < strlen(url) + 1 && url[j] != '?')
 		++j;
 
 	strncat(keyinfo->path, url, j);
-	if (j != strlen(url) + 1)
+	if ((unsigned)j != strlen(url) + 1)
 		strcpy(keyinfo->GET_para, url + j + 1);
 	if (keyinfo->path[strlen(keyinfo->path) - 1] == '/')
 		strcat(keyinfo->path, "index.html");
@@ -67,7 +64,6 @@ int parse_request_line(char* buffer, struct http_request_info* keyinfo)
 	char* url = (char*)malloc(sizeof(char) * (i - url_start + 1));
 	strncpy(url, buffer + url_start, i - url_start);
 	url[i - url_start] = '\0';
-	//keyinfo->url = url;	
 
 	parse_url(url, keyinfo);
 
@@ -86,7 +82,25 @@ int parse_request_line(char* buffer, struct http_request_info* keyinfo)
 	return i;
 }
 
-int parse_header_field(char* buffer, int start, struct http_request_info* keyinfo)
+void parse_header_field(char* buffer, int start, struct http_request_info* keyinfo)
 {
-	
+	//获得Connection字段
+	while ((unsigned)start < strlen(buffer) + 1)
+	{
+		char tempbuffer[MAX_SIZE];
+		memset(tempbuffer, 0, sizeof(tempbuffer));
+		start = get_header_field_from_buffer(start, buffer, tempbuffer);
+		if (strcasecmp(tempbuffer, "Connection: keep-alive") == 0 || strcasecmp(tempbuffer, "Connection: close") == 0)
+		{
+			int i = 0;
+			while ((unsigned)i < strlen(tempbuffer) + 1 && tempbuffer[i] != ':')
+				++i;
+			i = i + 2;
+			strcpy(keyinfo->connect_status, tempbuffer + i);
+			break;
+		}
+	}
+
+	if (strlen(keyinfo->connect_status) == 0)
+		strcpy(keyinfo->connect_status, "close");
 }

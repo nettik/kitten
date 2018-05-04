@@ -54,3 +54,12 @@ int make_socket_nonblock(int sockfd)
 	}
 	return 0;
 }
+
+void handle_sigpipe()
+{
+	struct sigaction action;
+	action.sa_handler = SIG_IGN;
+	sigemptyset(&action.sa_mask);
+	action.sa_flags = 0;
+	sigaction(SIGPIPE, &action, NULL);
+}

@@ -11,16 +11,36 @@ void do_request(struct task_para* arg)
 	if (buffer != NULL)
 	{
 		int start = parse_request_line(buffer, &keyinfo);
-
-		/*printf("method : %s\n", keyinfo.method);
-		printf("GET_para : %s\n", keyinfo.GET_para);
-		printf("path : %s\n", keyinfo.path);
-		printf("version : %s\n", keyinfo.version);*/
-
-		serve_static_file(keyinfo.path, connfd, epollfd, &keyinfo);
 		
+		parse_header_field(buffer, start, &keyinfo);
+#if 0		
+		printf("method : %s\n", keyinfo.method);
+		//printf("GET_para : %s\n", keyinfo.GET_para);
+		printf("path : %s\n", keyinfo.path);
+		printf("file_type : %s\n", keyinfo.file_type);
+		//printf("version : %s\n", keyinfo.version);
+#endif
+		if (is_request_legal(connfd, &keyinfo) == false)
+		{	
+			if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
+				perror("epoll_del_connfd_in_do_request");
+			shutdown(connfd, SHUT_WR);
+			close(connfd);
+			return;
+		}
+		
+		serve_static_text_file(keyinfo.path, connfd, &keyinfo);
+		
+		if (strcasecmp("close", keyinfo.connect_status) == 0)
+		{
+			if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
+				perror("epoll_del_connfd_in_serve_static_text_file_resource_close");
+			shutdown(connfd, SHUT_WR);
+			close(connfd);
+		}
+#if 0		
 		start = 0;
-		while (start < strlen(buffer) + 1)
+		while ((unsigned)start < strlen(buffer) + 1)
 		{
 			char tempbuffer[MAX_SIZE];
 			memset(tempbuffer, 0, sizeof(tempbuffer));
@@ -28,35 +48,17 @@ void do_request(struct task_para* arg)
 			printf("%s\n", tempbuffer);
 			start = t;
 		}
-
-	}
-
-	/*if (buffer != NULL)
-	{
-		struct sockaddr_in cliaddr;
-		socklen_t clilen = sizeof(cliaddr);
-		if (getpeername(connfd, (SA*)&cliaddr, &clilen) < 0)
-			perror("getpeername");
-
-		char IPaddr[20];
-		if (inet_ntop(AF_INET, &cliaddr.sin_addr, IPaddr, sizeof(IPaddr)) == NULL)
-			perror("inet_ntop");
-		int port = ntohs(cliaddr.sin_port);
-
-		printf("thread %d receive from %s : %d : %s\n", (int)pthread_self(), IPaddr, port, buffer);
-
-		send(connfd, buffer, strlen(buffer), 0);
-
+#endif
 		free(buffer);
-	}*/
+	}
 }
 
-void serve_static_file(char* path, int connfd, int epollfd, struct http_request_info* keyinfo)
+void serve_static_text_file(char* path, int connfd, struct http_request_info* keyinfo)
 {
 	FILE* resource = fopen(path, "r");
 	if (resource == NULL)
 	{
-		header_404_Not_Found(connfd);
+		header_404_Not_Found(connfd);	
 	}
 	else
 	{
@@ -64,27 +66,21 @@ void serve_static_file(char* path, int connfd, int epollfd, struct http_request_
 		
 		char buf[MAX_SIZE];
 		memset(buf, 0, sizeof(buf));
-		//fgets(buf, sizeof(buf), resource);
+		
 		while (!feof(resource))
 		{
-			//send(connfd, buf, sizeof(buf), 0);
 			fgets(buf, sizeof(buf), resource);
 			send(connfd, buf, strlen(buf), 0);
 		}
-		fclose(resource);
+		fclose(resource);	
 	}
-	//fclose(resource);
-	if (epoll_del(epollfd, connfd, EPOLLIN | EPOLLET) < 0)
-		perror("epoll_del_connfd_in_server_static_file");
-	shutdown(connfd, SHUT_WR);
-	close(connfd);
 }
 
 
 char* receive_request_from_client(int connfd, int epollfd)
 {
 	char* buffer = (char*)malloc(sizeof(char) * BUF_SIZE);
-	memset(buffer, 0, sizeof(buffer));
+	memset(buffer, 0, sizeof(char) * BUF_SIZE);
 	ssize_t n;
 	int buf_length = 1;
 	bool clientclosed = false;
@@ -128,6 +124,9 @@ char* receive_request_from_client(int connfd, int epollfd)
 			perror("epoll_del_connfd_in_receive_request_from_client");
 		shutdown(connfd, SHUT_WR);
 		close(connfd);
+		
+		free(buffer);
+		return NULL;
 	}
 	if (sum == 0)
 	{
@@ -140,7 +139,7 @@ char* receive_request_from_client(int connfd, int epollfd)
 int get_header_field_from_buffer(int start, char* buf, char* tempbuf)   //从缓冲区获取首部字段值
 {
 	int index = start;
-	while (start < strlen(buf) + 1 && buf[start] != '\r')
+	while ((unsigned)start < strlen(buf) + 1 && buf[start] != '\r')
 		++start;
 	
 	strncpy(tempbuf, buf + index, start - index);
@@ -176,85 +175,14 @@ int accept_connection(int epollfd, int listenfd)
 	return 0;
 }
 
-/*void string_echo(int connfd)
+bool is_request_legal(int connfd, struct http_request_info* keyinfo)
 {
-	char buffer[MAX_SIZE];
-	ssize_t n;
-	for (;;)
+	if (strcasecmp("GET", keyinfo->method) != 0)
 	{
-		n = recv(connfd, buffer, sizeof(buffer), 0);
-		buffer[n] = '\0';
-		if (n == 0)
-		{
-			close(connfd);
-			break;
-		}
-
-		struct sockaddr_in cliaddr;
-		socklen_t clilen = sizeof(cliaddr);
-
-		getpeername(connfd, (SA*)&cliaddr, &clilen);
-
-		char IPaddr[20];
-		inet_ntop(AF_INET, &cliaddr.sin_addr, IPaddr, sizeof(IPaddr));
-		int port = ntohs(cliaddr.sin_port);
-
-		printf("receive from %s : %d : %s\n", IPaddr, port, buffer);
-		send(connfd, buffer, n, 0);
+		header_501_Not_Implemented(connfd);
+		return false;
 	}
-}*/
+	/*...*/
 
-/*void do_recv(int epollfd, int connfd, unordered_map<int, struct task_queue>* task)
-{
-	char buffer[MAX_SIZE];
-	ssize_t n;
-	n = recv(connfd, buffer, sizeof(buffer), 0);
-	if (n == -1 || n == 0)
-	{
-		close(connfd);
-		epoll_del(epollfd, connfd, EPOLLIN);
-	}
-	else if (n > 0)
-	{
-		buffer[n] = '\0';
-
-		struct sockaddr_in cliaddr;
-		socklen_t clilen = sizeof(cliaddr);
-		getpeername(connfd, (SA*)&cliaddr, &clilen);
-
-		char IPaddr[20];
-		inet_ntop(AF_INET, &cliaddr.sin_addr, IPaddr, sizeof(IPaddr));
-		int port = ntohs(cliaddr.sin_port);
-
-		printf("receive from %s : %d : %s\n", IPaddr, port, buffer);
-
-		task_queue tq;
-		tq.sockfd = connfd;
-		strcpy(tq.buffer, buffer);
-		
-		pthread_mutex_lock(&lock_task);
-
-		(*task)[connfd] = tq;
-
-		pthread_mutex_unlock(&lock_task);
-
-		epoll_mod(epollfd, connfd, EPOLLOUT | EPOLLET);
-	}
+	return true;
 }
-
-
-void do_send(int epollfd, int connfd, unordered_map<int, struct task_queue>* task)
-{
-	char buffer[MAX_SIZE];
-
-	pthread_mutex_lock(&lock_task);
-
-	strcpy(buffer, ((*task)[connfd]).buffer);
-	(*task).erase(connfd);
-
-	pthread_mutex_unlock(&lock_task);
-
-	send(connfd, buffer, sizeof(buffer), 0);
-	
-	epoll_mod(epollfd, connfd, EPOLLIN | EPOLLET);
-}*/

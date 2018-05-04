@@ -55,7 +55,6 @@ void do_epoll(int listenfd, struct thread_pool_info* pool)
 void handle_event(int epollfd, struct epoll_event* events, int nums, int listenfd, struct thread_pool_info* pool)
 {
 	int fd;
-	//pthread_t tid;
 	for (int i = 0; i < nums; i++)
 	{
 		fd = events[i].data.fd;
@@ -72,28 +71,5 @@ void handle_event(int epollfd, struct epoll_event* events, int nums, int listenf
 			
 			thread_pool_add_task(pool, p, &do_request);
 		}
-		/*else if (events[i].events & EPOLLIN)
-		{
-			struct thread_parameter* para = new thread_parameter();
-			para->epollfd = epollfd;
-			para->sockfd = events[i].data.fd;
-			para->taskptr = task;
-
-			pthread_t tid;
-
-			pthread_create(&tid, NULL, &thread_work_recv, para);
-			
-		}
-		else if (events[i].events & EPOLLOUT)
-		{	
-			struct thread_parameter* para = new thread_parameter();
-			para->epollfd = epollfd;
-			para->sockfd = events[i].data.fd;
-			para->taskptr = task;
-
-			pthread_t tid;
-			pthread_create(&tid, NULL, &thread_work_send, para);
-			//do_send(epollfd, fd, task);
-		}*/
 	}
 }

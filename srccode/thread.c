@@ -1,36 +1,5 @@
 #include "thread.h"
 
-/*void* thread_work_recv(void* arg)
-{
-	int connfd = ((struct thread_parameter*)arg)->sockfd;
-	int epollfd = ((struct thread_parameter*)arg)->epollfd;
-	unordered_map<int, struct task_queue>* taskptr = ((struct thread_parameter*)arg)->taskptr;
-
-	delete((struct thread_parameter*)arg);
-
-	//pthread_detach(pthread_self());
-	//string_echo(connfd);
-	do_recv(epollfd, connfd, taskptr);
-	return NULL;
-}
-
-void* thread_work_send(void* arg)
-{	
-	int connfd = ((struct thread_parameter*)arg)->sockfd;
-	int epollfd = ((struct thread_parameter*)arg)->epollfd;
-	unordered_map<int, struct task_queue>* taskptr = ((struct thread_parameter*)arg)->taskptr;
-
-	delete((struct thread_parameter*)arg);
-
-	//pthread_detach(pthread_self());
-
-	do_send(epollfd, connfd, taskptr);
-	return NULL;
-}*/
-
-
-
-
 struct thread_pool_info* init_thread_pool(int thread_num)
 {
 	struct thread_pool_info* pool = (struct thread_pool_info*)malloc(sizeof(thread_pool_info));
@@ -110,6 +79,8 @@ void thread_pool_add_task(struct thread_pool_info* pool, struct task_para* arg, 
 
 void* thread_pool_work(void* arg)  //arg表示线程池pool
 {
+	//handle_sigpipe();
+
 	struct thread_pool_info* pool = (struct thread_pool_info*)arg;
 	struct task_node* task;
 	while (pool->thread_run)
