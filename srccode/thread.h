@@ -35,8 +35,4 @@ void thread_pool_add_task(struct thread_pool_info* pool, struct task_para* arg, 
 
 void* thread_pool_work(void* arg);
 
-void* thread_work_recv(void* arg);
-
-void* thread_work_send(void* arg);
-
 #endif

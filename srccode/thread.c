@@ -79,8 +79,6 @@ void thread_pool_add_task(struct thread_pool_info* pool, struct task_para* arg, 
 
 void* thread_pool_work(void* arg)  //arg表示线程池pool
 {
-	//handle_sigpipe();
-
 	struct thread_pool_info* pool = (struct thread_pool_info*)arg;
 	struct task_node* task;
 	while (pool->thread_run)

@@ -5,7 +5,7 @@
 
 int main()
 {
-	//handle_sigpipe();
+	handle_sigpipe();
 
 	int listenfd;
 

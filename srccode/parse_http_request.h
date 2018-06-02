@@ -38,13 +38,13 @@ struct http_request_info
 	}
 };
 
-void set_file_type(char* path, struct http_request_info* keyinfo);
+void set_file_type(char* path, struct http_request_info* keyinfo);                     //设置文件类型
 
-void parse_url(char* url, struct http_request_info* keyinfo);
+void parse_url(char* url, struct http_request_info* keyinfo);                          //解析url
 
-int parse_request_line(char* buffer, struct http_request_info* keyinfo);
+int parse_request_line(char* buffer, struct http_request_info* keyinfo);               //解析请求行
 
-void parse_header_field(char* buffer, int start, struct http_request_info* keyinfo);
+void parse_header_field(char* buffer, int start, struct http_request_info* keyinfo);   //解析首部字段
 
 //void destroy_http_request_info(struct http_request_info* keyinfo);
 

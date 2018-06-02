@@ -46,6 +46,7 @@ void parse_url(char* url, struct http_request_info* keyinfo)
 	if (keyinfo->path[strlen(keyinfo->path) - 1] == '/')
 		strcat(keyinfo->path, "index.html");
 }
+
 int parse_request_line(char* buffer, struct http_request_info* keyinfo)
 {
 	int i = 0;
