@@ -4,14 +4,14 @@
 #include "init.h"
 #include "request_and_response.h"
 
-struct mime_type
+struct mime_type                //多用途互联网邮件扩展类型
 {
 	const char* type;
 	const char* value;
 };
 
 
-struct http_request_info
+struct http_request_info        //用于存储http请求报文的相关信息
 {
 	char method[10];
 
