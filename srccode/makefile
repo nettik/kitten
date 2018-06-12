@@ -1,4 +1,4 @@
-all:client server
+all:client httpserver
 
 init.o:init.c
 	g++ -g -c -W -Wall init.c
@@ -21,11 +21,11 @@ epoll.o:epoll.c
 tcpserver.o:tcpserver.c
 	g++ -g -c -W -Wall tcpserver.c
 
-server:tcpserver.o request_and_response.o init.o thread.o epoll.o parse_http_request.o status_code.o
-	g++ -g -W -Wall -o server tcpserver.o request_and_response.o init.o thread.o epoll.o parse_http_request.o status_code.o -lpthread
+httpserver:tcpserver.o request_and_response.o init.o thread.o epoll.o parse_http_request.o status_code.o
+	g++ -g -W -Wall -o httpserver tcpserver.o request_and_response.o init.o thread.o epoll.o parse_http_request.o status_code.o -lpthread
 
 client:tcpclient.c
 	g++ -g -W -Wall -o client tcpclient.c
 
 clean:
-	rm  *.o server client
+	rm  *.o httpserver client

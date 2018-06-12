@@ -19,9 +19,9 @@
 
 #define PORT 4000                                  //默认端口号
 #define IPADDR INADDR_ANY                          //绑定到监听套接字上默认的IP地址
-#define LIS_QUEUE_SIZE 50                          //listen()函数的第二个参数，表示监听队列中的连接数目
+#define LIS_QUEUE_SIZE 1000                        //listen()函数的第二个参数，表示监听队列中的连接数目
 #define EPOLL_LIS_SIZE 1000                        //epoll_create()的参数，epoll可监听的描述符的最大数量
-#define EPOLLEVENTS 200                            //epoll_event结构体数组的大小
+#define EPOLLEVENTS 1000                           //epoll_event结构体数组的大小
 #define MAX_SIZE 1024                              //缓冲区大小
 #define BUF_SIZE 512							   //缓冲区大小
 #define THREAD_NUM 4                               //线程池中，线程数目   
